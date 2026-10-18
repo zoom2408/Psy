@@ -7,6 +7,7 @@
   },
   "scripts": {
     "tokens": "node scripts/build-tokens.mjs",
+    "sync-vault": "bash ../scripts/sync-vault.sh",
     "predev": "npm run tokens",
     "dev": "astro dev",
     "prebuild": "npm run tokens",
@@ -16,6 +17,7 @@
     "pack": "npm run build && cd dist && zip -qr ../psy-site.zip ."
   },
   "dependencies": {
+    "@astrojs/markdown-remark": "^7.3.3",
     "@fontsource-variable/source-serif-4": "^5.3.1",
     "@fontsource/be-vietnam-pro": "^5.3.0",
     "astro": "^7.4.0"

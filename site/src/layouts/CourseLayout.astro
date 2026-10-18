@@ -6,14 +6,15 @@ import Toc from '../design-system/components/Toc.astro';
 import PrevNext from '../design-system/components/PrevNext.astro';
 import Breadcrumb from '../design-system/components/Breadcrumb.astro';
 import Icon from '../design-system/components/Icon.astro';
-import { coursePages, type Course } from '../data/courses';
+import type { Course } from '../data/courses';
+import { courseNav } from '../lib/vault';
 import { articlesOf } from '../data/articles';
 import '../styles/course-doc.css';
 
 interface Props { course: Course; pageId: string; title: string; description?: string; headings?: { depth: number; slug: string; text: string }[] }
 const { course, pageId, title, description, headings = [] } = Astro.props;
 const base = import.meta.env.BASE_URL.replace(/\/$/, '');
-const pg = coursePages(course, base);
+const pg = await courseNav(course, base);
 const idx = pg.all.findIndex((p) => p.id === pageId);
 const current = pg.all[idx];
 const prev = pg.all[idx - 1], next = pg.all[idx + 1];
@@ -21,7 +22,8 @@ const related = articlesOf(course.slug);
 const groups = [
   { title: 'Bắt đầu', items: [pg.intro] },
   { title: 'Chuyên đề', items: pg.modules },
-  ...(pg.review ? [{ title: 'Ôn tập', items: [pg.review] }] : []),
+  ...(pg.cases.length ? [{ title: 'Ca lâm sàng', items: pg.cases }] : []),
+  ...(pg.review.length ? [{ title: 'Ôn tập', items: pg.review }] : []),
   ...(related.length ? [{ title: 'Bài viết học thuật', items: related.map((a) => ({ id: a.slug, title: a.title, href: `${base}/bai-viet/${a.slug}/` })) }] : [])
 ].map((g) => ({ title: g.title, open: true, items: g.items.map((i) => ({ title: i.title, href: i.href, current: i.id === pageId })) }));
 const crumbs = [

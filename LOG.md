@@ -6,6 +6,32 @@ Mỗi entry: ngày, yêu cầu, lý do, việc đã làm, ghi chú/giả định
 
 ---
 
+## 2026-10-18
+
+### #018 Site đọc nội dung từ vault, xuất bản qua domain
+- **Yêu cầu:** Dùng online qua domain, nội dung nằm trong Obsidian vault.
+- **Lý do:** Viết ở Obsidian (iCloud), push là lên `psy.mindmirror.quest`, không nhập lại vào code.
+- **Đã làm:** Bỏ symlink (Git và Actions không đọc được). Vault iCloud nay có cùng cấu trúc với `vault/` của repo, thêm `slug` vào frontmatter. Script `scripts/sync-vault.sh` (`npm run sync-vault`) rsync một chiều iCloud sang `vault/`. Astro đọc `vault/10-Courses` bằng content collection `notes`. Plugin remark `site/plugins/obsidian.mjs` dịch wikilink, callout `[!type]` và khối quiz sang markup của design system. Trang `[course]/[page]` render 12 bài, 6 bộ ca, cheatsheet, bài thi; sidebar có thêm nhóm Ca lâm sàng và Ôn tập. Tách script quiz ra `src/scripts/quiz.ts`. Cài `@astrojs/markdown-remark` (Astro 7 mặc định không có bộ xử lý unified). Xóa phần mở đầu thừa (tên tác giả, thanh điều hướng, phiếu thi) khỏi các bài.
+- **Ghi chú:** Build 28 trang, quiz và callout gập kiểm tra bằng trình duyệt, không lỗi console. Link tới khái niệm (vd Triệu chứng âm tính) hiện dạng gạch chân đứt vì chưa có trang khái niệm. Dữ liệu `courses.ts` còn lại: tóm tắt chuyên đề ở trang giới thiệu và trang Ôn tập nhanh (tạm).
+
+### #017 Liên kết vault với Obsidian trong iCloud
+- **Yêu cầu:** Vault đang để trong iCloud; liên kết `~/Psy/vault` với nó, ghi chú cũ bỏ vào Archive.
+- **Lý do:** Viết trong Obsidian (đồng bộ iCloud) mà vẫn có nội dung trong repo cho site.
+- **Đã làm:** Chuyển ghi chú cá nhân cũ của iCloud vault `Psy` vào `Archive/`. Chuyển Tâm bệnh học sang `iCloud/.../Psy/Tâm bệnh học/`. `vault/10-Courses/tam-benh-hoc` giờ là symlink trỏ tới thư mục đó.
+- **Ghi chú:** Git lưu symlink chứ không lưu nội dung, và GitHub Actions sẽ không thấy thư mục đích. Cần giải quyết trước khi nối vault với site (ví dụ rsync vào repo trước khi build). Khái niệm mẫu `20-Concepts/Triệu chứng âm tính` nằm ngoài iCloud vault nên link tới nó chưa hiện trong Obsidian.
+
+### #016 Migrate Tâm bệnh học vào vault
+- **Yêu cầu:** Làm Tâm bệnh học trước, xong thì mở Obsidian.
+- **Lý do:** Có nội dung thật trong vault để nối với site sau này.
+- **Đã làm:** Clone `zoom2408/TamBenhHoc` (HTML tĩnh), viết script chuyển HTML và dữ liệu JS sang markdown. Kết quả trong `vault/10-Courses/tam-benh-hoc/`: 12 bài (6 chuyên đề, mỗi chuyên đề một bản tóm tắt "GPT" và một bản chi tiết "Claude"), 6 bộ ca lâm sàng, `Review/Cheatsheet`, `Review/Bài thi tổng hợp` (40 câu). Mọi câu trắc nghiệm đổi sang khối ```quiz (hơn 370 khối, có đáp án và giải thích). Cập nhật `_Course`, `Home`; xóa bài mẫu cũ.
+- **Ghi chú:** [Assumed: giữ cả hai bản của mỗi chuyên đề thay vì gộp.] Nội dung chuyển tự động, cần rà lại định dạng (bảng, thẻ lật đã thành văn bản thường) và độ chính xác. Chưa nối vault với site; dữ liệu trong `src/data/courses.ts` vẫn là tạm.
+
+### #015 Tạo Obsidian vault
+- **Yêu cầu:** Tạo Obsidian vault.
+- **Lý do:** Có nơi viết nội dung các môn, để site Astro đọc sau này.
+- **Đã làm:** Tạo `vault/` theo cấu trúc README: `00-Index`, `10-Courses`, `20-Concepts`, `30-People`, `40-Research`, `50-Sources`, `90-Templates`. Cấu hình `.obsidian` (wikilink, đường dẫn tương đối, attachments, plugin Templates trỏ `90-Templates`). Có 5 template (Lecture, Concept, Course, Person, Source) và nội dung mẫu cho Tâm bệnh học (1 bài, 1 khái niệm).
+- **Ghi chú:** Bỏ trường `accent` ở frontmatter môn vì site dùng một bộ màu. Chưa nối vault với site và chưa migrate nội dung. [Assumed: môn đầu tiên trong vault là Tâm bệnh học.]
+
 ## 2026-10-17
 
 ### #014 Kiểm tra và nối domain psy.mindmirror.quest

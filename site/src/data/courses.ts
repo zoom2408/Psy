@@ -92,13 +92,3 @@ export const courses: Course[] = [
   { slug: 'thong-ke', code: 'Thống kê', title: 'Thống kê trong tâm lý', description: 'Mô tả, suy luận và đọc nghiên cứu.', ready: false },
   { slug: 'chanh-niem', code: 'Mindfulness', title: 'Chánh niệm', description: 'Nền tảng và thực hành trong lâm sàng.', ready: false }
 ];
-
-export interface DocPage { id: string; title: string; href: string }
-// Danh sách trang của một môn theo thứ tự đọc (dùng cho sidebar và Trước/Sau).
-export function coursePages(course: Course, base: string): { intro: DocPage; modules: DocPage[]; review?: DocPage; all: DocPage[] } {
-  const root = `${base}/${course.slug}/`;
-  const intro = { id: '', title: 'Giới thiệu', href: root };
-  const modules = (course.modules ?? []).map((m) => ({ id: m.id, title: m.title, href: `${root}${m.id}/` }));
-  const review = course.cards || course.quiz ? { id: 'on-tap', title: 'Ôn tập nhanh', href: `${root}on-tap/` } : undefined;
-  return { intro, modules, review, all: [intro, ...modules, ...(review ? [review] : [])] };
-}

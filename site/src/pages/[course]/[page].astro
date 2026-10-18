@@ -1,46 +1,43 @@
 ---
+import { render } from 'astro:content';
 import CourseLayout from '../../layouts/CourseLayout.astro';
 import Callout from '../../design-system/components/Callout.astro';
-import Tag from '../../design-system/components/Tag.astro';
 import Quiz from '../../design-system/components/Quiz.astro';
 import QuizSet from '../../design-system/components/QuizSet.astro';
 import Flashcard from '../../design-system/components/Flashcard.astro';
 import { courses } from '../../data/courses';
+import { notesOf } from '../../lib/vault';
 
-export function getStaticPaths() {
-  return courses.filter((c) => c.ready).flatMap((course) => [
-    ...(course.modules ?? []).map((m) => ({ params: { course: course.slug, page: m.id }, props: { course, moduleId: m.id } })),
-    ...(course.cards || course.quiz ? [{ params: { course: course.slug, page: 'on-tap' }, props: { course, moduleId: 'on-tap' } }] : [])
-  ]);
+export async function getStaticPaths() {
+  const out = [];
+  for (const course of courses.filter((c) => c.ready)) {
+    for (const note of await notesOf(course.slug)) out.push({ params: { course: course.slug, page: note.data.slug }, props: { course, note } });
+    if (course.cards || course.quiz) out.push({ params: { course: course.slug, page: 'on-tap' }, props: { course, note: null } });
+  }
+  return out;
 }
-const { course, moduleId } = Astro.props;
-const mod = (course.modules ?? []).find((m) => m.id === moduleId);
-const headings = mod
-  ? [{ depth: 2, slug: 'noi-dung', text: 'Nội dung chính' }, { depth: 2, slug: 'diem-can-nho', text: 'Điểm cần nhớ' }, { depth: 2, slug: 'tai-lieu', text: 'Tài liệu kèm theo' }]
+const { course, note } = Astro.props;
+const mod = note ? (course.modules ?? []).find((m) => m.id === note.data.slug) : undefined;
+const rendered = note ? await render(note) : null;
+const Content = rendered?.Content;
+const headings = rendered
+  ? rendered.headings.filter((h) => h.depth <= 3 && !/^Câu \d+/.test(h.text))
   : [{ depth: 2, slug: 'flashcard', text: 'Flashcard' }, { depth: 2, slug: 'quiz', text: 'Quiz khởi động' }];
+const title = note?.data.title ?? 'Ôn tập nhanh';
 ---
-<CourseLayout course={course} pageId={moduleId} title={mod?.title ?? 'Ôn tập nhanh'} headings={headings}
-  description={mod ? mod.lead : `Flashcard và quiz ôn nhanh ${course.title}.`}>
-  {mod ? (
+<CourseLayout course={course} pageId={note?.data.slug ?? 'on-tap'} title={title} headings={headings}
+  description={mod ? mod.lead : note ? `${title}, môn ${course.title}.` : `Flashcard và quiz ôn nhanh ${course.title}.`}>
+  {Content ? (
     <>
-      <h1>{mod.title}</h1>
-      <p class="cdoc__lead">{mod.lead}</p>
-
-      <h2 id="noi-dung">Nội dung chính</h2>
-      <ul>{mod.topics.map((t) => <li>{t}</li>)}</ul>
-
-      <h2 id="diem-can-nho">Điểm cần nhớ</h2>
-      <Callout type="note" title="Ghi nhớ">{mod.tip}</Callout>
-
-      <h2 id="tai-lieu">Tài liệu kèm theo</h2>
-      <ul class="cdoc__chips">{mod.meta.map((x) => <li><Tag>{x}</Tag></li>)}</ul>
-      <Callout type="note" title="Trạng thái nội dung">Chi tiết từng mục đang được chuyển từ bài học cũ sang wiki.</Callout>
+      <h1>{title}</h1>
+      {mod && <p class="cdoc__lead">{mod.lead}</p>}
+      {note.data.status === 'draft' && <Callout type="note" title="Bản nháp">Nội dung được chuyển tự động từ tài liệu cũ, đang chờ rà soát.</Callout>}
+      <div class="vault"><Content /></div>
     </>
   ) : (
     <>
       <h1>Ôn tập nhanh</h1>
       <p class="cdoc__lead">Lật thẻ để nhớ các mốc thời gian và làm vài câu quiz để kiểm tra.</p>
-
       {course.cards && (
         <>
           <h2 id="flashcard">Flashcard</h2>
@@ -61,3 +58,4 @@ const headings = mod
     </>
   )}
 </CourseLayout>
+<script>import '../../scripts/quiz.ts';</script>

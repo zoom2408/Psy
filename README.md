@@ -14,6 +14,23 @@ Luồng làm việc: **viết trong Obsidian → commit → build Astro → đư
 
 ---
 
+## Phần A0. Quy trình xuất bản (iCloud → repo → domain)
+
+Nội dung viết trong vault Obsidian ở iCloud (`~/Library/Mobile Documents/iCloud~md~obsidian/Documents/Psy`). Cấu trúc thư mục trong vault giống `vault/` của repo. Ghi chú cũ nằm ở `Archive/` và không được đồng bộ.
+
+```bash
+cd ~/Psy/site
+npm run sync-vault     # iCloud -> ~/Psy/vault (rsync một chiều, bỏ Archive và .obsidian)
+npm run dev            # xem thử
+git add -A && git commit && git push   # Actions build và deploy lên psy.mindmirror.quest
+```
+
+- Nguồn gốc nội dung là vault iCloud. Đừng sửa trực tiếp `~/Psy/vault`, lần sync sau sẽ ghi đè.
+- Mỗi ghi chú cần `slug` trong frontmatter (đường dẫn trang). Website đọc các note có `type: lecture | case-set | exam | cheatsheet` trong `10-Courses/<môn>/`.
+- Cú pháp được dịch: `[[wikilink]]`, callout `> [!type]` (thêm `-` để gập), khối ` ```quiz `. Plugin ở `site/plugins/obsidian.mjs`.
+
+---
+
 ## Phần A. Tạo Obsidian vault
 
 1. Mở Obsidian → **Open folder as vault** → chọn thư mục `Psy/vault`.

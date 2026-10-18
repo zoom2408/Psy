@@ -4,7 +4,8 @@ import Button from '../../design-system/components/Button.astro';
 import Icon from '../../design-system/components/Icon.astro';
 import Callout from '../../design-system/components/Callout.astro';
 import ArticleCard from '../../design-system/components/ArticleCard.astro';
-import { courses, coursePages } from '../../data/courses';
+import { courses } from '../../data/courses';
+import { courseNav } from '../../lib/vault';
 import { articlesOf, readingMinutes, formatDate } from '../../data/articles';
 
 export function getStaticPaths() {
@@ -12,8 +13,9 @@ export function getStaticPaths() {
 }
 const { course } = Astro.props;
 const base = import.meta.env.BASE_URL.replace(/\/$/, '');
-const pg = coursePages(course, base);
+const pg = await courseNav(course, base);
 const modules = course.modules ?? [];
+const hrefOf = (id: string) => pg.modules.find((p) => p.id === id)?.href ?? '#';
 const related = articlesOf(course.slug);
 const headings = [
   { depth: 2, slug: 'chuyen-de', text: 'Các chuyên đề' },
@@ -31,13 +33,13 @@ const headings = [
     </ul>
   )}
 
-  {modules[0] && <Button size="lg" href={pg.modules[0].href}>Bắt đầu chuyên đề 01<Icon slot="icon-end" name="arrow-right" size={18} /></Button>}
+  {modules[0] && <Button size="lg" href={hrefOf(modules[0].id)}>Bắt đầu chuyên đề 01<Icon slot="icon-end" name="arrow-right" size={18} /></Button>}
 
   <h2 id="chuyen-de">Các chuyên đề</h2>
   <ul class="cdoc__list">
-    {modules.map((m, i) => (
+    {modules.map((m) => (
       <li>
-        <a class="cdoc__item" href={pg.modules[i].href}>
+        <a class="cdoc__item" href={hrefOf(m.id)}>
           <span class="cdoc__n">{m.n}</span>
           <span class="cdoc__body"><strong>{m.title}</strong><small>{m.lead}</small></span>
           <Icon name="arrow-right" size={18} class="cdoc__go" />
@@ -47,8 +49,8 @@ const headings = [
   </ul>
 
   <h2 id="cach-hoc">Cách học</h2>
-  <p>Đọc theo thứ tự các chuyên đề ở mục lục bên trái. Mỗi chuyên đề có các mục chính và điểm cần nhớ. Cuối cùng dùng trang Ôn tập nhanh để lật thẻ và làm quiz.</p>
-  <Callout type="note" title="Trạng thái nội dung">Nội dung chi tiết từng chuyên đề đang được chuyển từ các bài học cũ sang wiki. Trang hiện chỉ có phần tóm tắt.</Callout>
+  <p>Đọc theo thứ tự các chuyên đề ở mục lục bên trái. Mỗi chuyên đề có bản tóm tắt và bản chi tiết, kèm câu hỏi kiểm tra ngay trong bài. Sau đó luyện với các bộ ca lâm sàng, cheatsheet và bài thi tổng hợp.</p>
+  <Callout type="note" title="Trạng thái nội dung">Nội dung được chuyển từ các bài học cũ sang wiki và đang chờ rà soát. Đối chiếu với giáo trình trước khi dùng để thi.</Callout>
 
   {related.length > 0 && (
     <>
