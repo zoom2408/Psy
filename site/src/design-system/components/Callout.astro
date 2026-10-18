@@ -1,0 +1,74 @@
+---
+// Callout: definition | example | experiment | case | note. Map với callout Obsidian `> [!type]`.
+// collapsible -> dùng <details>, mở/đóng có animation. States: default, hover, focus, open, closed.
+import Icon from './Icon.astro';
+interface Props { type?: 'definition' | 'example' | 'experiment' | 'case' | 'note'; title?: string; collapsible?: boolean; open?: boolean; class?: string }
+const cfg = {
+  definition: { label: 'Định nghĩa', icon: 'book-open', color: 'accent' },
+  example: { label: 'Ví dụ', icon: 'lightbulb', color: 'success' },
+  experiment: { label: 'Thí nghiệm', icon: 'flask', color: 'warning' },
+  case: { label: 'Ca / Tình huống', icon: 'file-text', color: 'danger' },
+  note: { label: 'Ghi chú', icon: 'info', color: 'info' }
+} as const;
+const { type = 'note', title, collapsible = false, open = true, class: className } = Astro.props;
+const c = cfg[type];
+const Wrapper = collapsible ? 'details' : 'div';
+const Head = collapsible ? 'summary' : 'div';
+---
+<Wrapper class:list={['callout', `callout--${c.color}`, className]} data-callout={type} open={collapsible ? open : undefined} data-reveal>
+  <Head class="callout__head">
+    <span class="callout__icon"><Icon name={c.icon} size={16} /></span>
+    <span class="callout__titles">
+      <span class="callout__kind">{c.label}</span>
+      {title && <span class="callout__title">{title}</span>}
+    </span>
+    {collapsible && <Icon name="chevron-down" size={18} class="callout__chev" />}
+  </Head>
+  <div class="callout__body"><slot /></div>
+</Wrapper>
+
+<style is:global>
+  .callout {
+    --_tint: var(--accent-tint); --_strong: var(--accent-tint-strong); --_text: var(--accent-text); --_border: var(--accent-border); --_solid: var(--accent-solid); --_on: var(--accent-on-solid);
+    position: relative; max-width: var(--layout-measure); margin-block: var(--space-6);
+    background: var(--_tint); border: 1px solid var(--_border); border-left: 4px solid var(--_solid);
+    border-radius: var(--radius-sm) var(--radius-lg) var(--radius-lg) var(--radius-sm);
+    transition: box-shadow var(--duration-base) var(--ease-standard), background-color var(--duration-base), transform var(--duration-base) var(--ease-standard);
+  }
+  .callout--success { --_tint: var(--success-tint); --_strong: var(--success-tint-strong); --_text: var(--success-text); --_border: var(--success-border); --_solid: var(--success-solid); --_on: var(--success-on-solid); }
+  .callout--warning { --_tint: var(--warning-tint); --_strong: var(--warning-tint-strong); --_text: var(--warning-text); --_border: var(--warning-border); --_solid: var(--warning-solid); --_on: var(--warning-on-solid); }
+  .callout--danger { --_tint: var(--danger-tint); --_strong: var(--danger-tint-strong); --_text: var(--danger-text); --_border: var(--danger-border); --_solid: var(--danger-solid); --_on: var(--danger-on-solid); }
+  .callout--info { --_tint: var(--info-tint); --_strong: var(--info-tint-strong); --_text: var(--info-text); --_border: var(--info-border); --_solid: var(--info-solid); --_on: var(--info-on-solid); }
+  .callout:hover { box-shadow: var(--shadow-sm); }
+
+  .callout__head {
+    display: flex; align-items: center; gap: var(--space-3); padding: var(--space-3) var(--space-4);
+    list-style: none; font-family: var(--font-sans);
+  }
+  .callout__head::-webkit-details-marker { display: none; }
+  .callout__icon {
+    flex: none; display: grid; place-items: center; width: 1.75rem; height: 1.75rem; border-radius: 50%;
+    background: var(--_solid); color: var(--_on); transition: transform var(--duration-base) var(--ease-spring);
+  }
+  .callout:hover .callout__icon { transform: rotate(-8deg) scale(1.08); }
+  .callout__titles { flex: 1; display: flex; flex-wrap: wrap; align-items: baseline; gap: var(--space-1) var(--space-3); min-width: 0; }
+  .callout__kind { font-size: var(--text-xs); font-weight: var(--weight-bold); letter-spacing: var(--tracking-caps); text-transform: uppercase; color: var(--_text); }
+  .callout__title { font-size: var(--text-base); font-weight: var(--weight-semibold); color: var(--color-text-primary); }
+  .callout__chev { flex: none; color: var(--_text); transition: transform var(--duration-base) var(--ease-spring); }
+  .callout[open] .callout__chev { transform: rotate(180deg); }
+
+  summary.callout__head { cursor: pointer; border-radius: var(--radius-lg); transition: background-color var(--duration-fast); }
+  summary.callout__head:hover { background: var(--_strong); }
+  summary.callout__head:active { background: var(--_strong); filter: brightness(0.97); }
+  summary.callout__head:focus-visible { outline: 2px solid var(--_solid); outline-offset: -2px; }
+
+  .callout__body { padding: 0 var(--space-5) var(--space-4) calc(var(--space-4) + 1.75rem + var(--space-3)); font-family: var(--font-serif); font-size: var(--text-base); line-height: var(--leading-relaxed); color: var(--color-text-primary); }
+  .callout__body > * + * { margin-top: var(--space-3); }
+  .callout__body > :first-child { margin-top: 0; }
+  .callout details[open] > .callout__body, details.callout[open] > .callout__body { animation: callout-open var(--duration-base) var(--ease-enter); }
+  @keyframes callout-open { from { opacity: 0; transform: translateY(-6px); } to { opacity: 1; transform: none; } }
+
+  @media (max-width: 639px) {
+    .callout__body { padding-left: var(--space-4); }
+  }
+</style>

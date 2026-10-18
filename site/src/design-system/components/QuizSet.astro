@@ -1,0 +1,87 @@
+---
+// QuizSet: gom nhiều <Quiz>, hiện tiến độ, điểm cuối và nút làm lại cả bộ.
+// States: chưa làm, đang làm (thanh tiến độ lấp dần), hoàn thành (điểm đếm lên), reset.
+import Button from './Button.astro';
+interface Props { title?: string }
+const { title = 'Kiểm tra kiến thức' } = Astro.props;
+---
+<psy-quiz-set class="qset">
+  <header class="qset__head">
+    <h3 class="qset__title">{title}</h3>
+    <p class="qset__count" aria-live="polite"><span data-done>0</span>/<span data-total>0</span> câu · <span data-right>0</span> đúng</p>
+    <div class="qset__track" role="progressbar" aria-label="Tiến độ" aria-valuemin="0" aria-valuemax="100" aria-valuenow="0"><div class="qset__fill"></div></div>
+  </header>
+  <div class="qset__items"><slot /></div>
+  <section class="qset__summary" hidden aria-live="polite">
+    <p class="qset__score"><span data-score>0</span><small>/<span data-score-total>0</span></small></p>
+    <p class="qset__msg" data-msg></p>
+    <Button variant="secondary" data-qset-reset>
+      <Fragment slot="icon-start"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M3 12a9 9 0 1 0 9-9 9.75 9.75 0 0 0-6.74 2.74L3 8"/><path d="M3 3v5h5"/></svg></Fragment>
+      Làm lại cả bộ
+    </Button>
+  </section>
+</psy-quiz-set>
+
+<style is:global>
+  .qset { display: block; max-width: var(--layout-measure); margin-block: var(--space-8); }
+  .qset__head { position: sticky; top: var(--layout-header-h); z-index: 5; display: grid; grid-template-columns: 1fr auto; gap: var(--space-1) var(--space-4); align-items: baseline; padding: var(--space-3) 0; background: color-mix(in srgb, var(--color-bg-page) 92%, transparent); backdrop-filter: blur(8px); }
+  .qset__title { font-family: var(--font-serif); font-size: var(--text-xl); font-weight: var(--weight-semibold); }
+  .qset__count { font-size: var(--text-sm); color: var(--color-text-muted); font-variant-numeric: tabular-nums; }
+  .qset__track { grid-column: 1 / -1; height: 6px; border-radius: var(--radius-pill); background: var(--color-bg-sunken); overflow: hidden; }
+  .qset__fill { height: 100%; width: 100%; transform-origin: left; transform: scaleX(0); background: linear-gradient(90deg, var(--accent-solid), var(--success-solid)); border-radius: inherit; transition: transform var(--duration-slower) var(--ease-standard); }
+  .qset__summary { margin-top: var(--space-6); padding: var(--space-8) var(--space-6); text-align: center; background: var(--accent-tint); border: 1px solid var(--accent-border); border-radius: var(--radius-xl); animation: qset-in var(--duration-slower) var(--ease-spring); }
+  .qset__summary[hidden] { display: none; }
+  .qset__score { font-family: var(--font-serif); font-size: var(--text-4xl); font-weight: var(--weight-bold); color: var(--accent-text); font-variant-numeric: tabular-nums; line-height: 1; }
+  .qset__score small { font-size: var(--text-xl); color: var(--color-text-muted); }
+  .qset__msg { margin: var(--space-3) 0 var(--space-5); font-size: var(--text-md); color: var(--color-text-secondary); }
+  @keyframes qset-in { from { opacity: 0; transform: translateY(16px) scale(0.96); } to { opacity: 1; transform: none; } }
+</style>
+
+<script>
+  class PsyQuizSet extends HTMLElement {
+    connectedCallback() {
+      if (this.dataset.ready) return;
+      this.dataset.ready = '1';
+      this.q = (s) => this.querySelector(s);
+      this.addEventListener('quiz:answered', () => this.update());
+      this.addEventListener('quiz:reset', () => this.update());
+      this.q('[data-qset-reset]').addEventListener('click', () => {
+        this.querySelectorAll('psy-quiz').forEach((el) => el.dataset.state !== 'idle' && el.reset());
+        this.scrollIntoView({ behavior: matchMedia('(prefers-reduced-motion: reduce)').matches ? 'auto' : 'smooth', block: 'start' });
+      });
+      this.update();
+    }
+    update() {
+      const all = [...this.querySelectorAll('psy-quiz')];
+      const done = all.filter((e) => e.dataset.state === 'correct' || e.dataset.state === 'wrong');
+      const right = all.filter((e) => e.dataset.state === 'correct').length;
+      const pct = all.length ? done.length / all.length : 0;
+      this.q('[data-done]').textContent = done.length;
+      this.q('[data-total]').textContent = all.length;
+      this.q('[data-right]').textContent = right;
+      this.q('.qset__fill').style.transform = `scaleX(${pct})`;
+      this.q('[role=progressbar]').setAttribute('aria-valuenow', Math.round(pct * 100));
+      const sum = this.q('.qset__summary');
+      const finished = all.length > 0 && done.length === all.length;
+      sum.hidden = !finished;
+      if (finished) {
+        this.q('[data-score-total]').textContent = all.length;
+        const ratio = right / all.length;
+        this.q('[data-msg]').textContent = ratio >= 0.9 ? 'Xuất sắc. Bạn nắm rất chắc phần này.' : ratio >= 0.7 ? 'Tốt. Xem lại các câu sai để chắc hơn.' : 'Cần ôn thêm. Đọc lại bài rồi thử lần nữa.';
+        this.countUp(this.q('[data-score]'), right);
+        sum.scrollIntoView({ behavior: matchMedia('(prefers-reduced-motion: reduce)').matches ? 'auto' : 'smooth', block: 'nearest' });
+      }
+    }
+    countUp(el, to) {
+      if (matchMedia('(prefers-reduced-motion: reduce)').matches || to === 0) { el.textContent = to; return; }
+      const t0 = performance.now();
+      const step = (t) => {
+        const p = Math.min(1, (t - t0) / 700);
+        el.textContent = Math.round(to * (1 - Math.pow(1 - p, 3)));
+        if (p < 1) requestAnimationFrame(step);
+      };
+      requestAnimationFrame(step);
+    }
+  }
+  if (!customElements.get('psy-quiz-set')) customElements.define('psy-quiz-set', PsyQuizSet);
+</script>

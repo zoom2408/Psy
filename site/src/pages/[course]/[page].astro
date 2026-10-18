@@ -1,0 +1,63 @@
+---
+import CourseLayout from '../../layouts/CourseLayout.astro';
+import Callout from '../../design-system/components/Callout.astro';
+import Tag from '../../design-system/components/Tag.astro';
+import Quiz from '../../design-system/components/Quiz.astro';
+import QuizSet from '../../design-system/components/QuizSet.astro';
+import Flashcard from '../../design-system/components/Flashcard.astro';
+import { courses } from '../../data/courses';
+
+export function getStaticPaths() {
+  return courses.filter((c) => c.ready).flatMap((course) => [
+    ...(course.modules ?? []).map((m) => ({ params: { course: course.slug, page: m.id }, props: { course, moduleId: m.id } })),
+    ...(course.cards || course.quiz ? [{ params: { course: course.slug, page: 'on-tap' }, props: { course, moduleId: 'on-tap' } }] : [])
+  ]);
+}
+const { course, moduleId } = Astro.props;
+const mod = (course.modules ?? []).find((m) => m.id === moduleId);
+const headings = mod
+  ? [{ depth: 2, slug: 'noi-dung', text: 'Nội dung chính' }, { depth: 2, slug: 'diem-can-nho', text: 'Điểm cần nhớ' }, { depth: 2, slug: 'tai-lieu', text: 'Tài liệu kèm theo' }]
+  : [{ depth: 2, slug: 'flashcard', text: 'Flashcard' }, { depth: 2, slug: 'quiz', text: 'Quiz khởi động' }];
+---
+<CourseLayout course={course} pageId={moduleId} title={mod?.title ?? 'Ôn tập nhanh'} headings={headings}
+  description={mod ? mod.lead : `Flashcard và quiz ôn nhanh ${course.title}.`}>
+  {mod ? (
+    <>
+      <h1>{mod.title}</h1>
+      <p class="cdoc__lead">{mod.lead}</p>
+
+      <h2 id="noi-dung">Nội dung chính</h2>
+      <ul>{mod.topics.map((t) => <li>{t}</li>)}</ul>
+
+      <h2 id="diem-can-nho">Điểm cần nhớ</h2>
+      <Callout type="note" title="Ghi nhớ">{mod.tip}</Callout>
+
+      <h2 id="tai-lieu">Tài liệu kèm theo</h2>
+      <ul class="cdoc__chips">{mod.meta.map((x) => <li><Tag>{x}</Tag></li>)}</ul>
+      <Callout type="note" title="Trạng thái nội dung">Chi tiết từng mục đang được chuyển từ bài học cũ sang wiki.</Callout>
+    </>
+  ) : (
+    <>
+      <h1>Ôn tập nhanh</h1>
+      <p class="cdoc__lead">Lật thẻ để nhớ các mốc thời gian và làm vài câu quiz để kiểm tra.</p>
+
+      {course.cards && (
+        <>
+          <h2 id="flashcard">Flashcard</h2>
+          <p>Nhấn vào thẻ để xem đáp án. Đánh dấu thẻ nào còn lúng túng.</p>
+          <div class="cdoc__cards">
+            {course.cards.map((c) => <Flashcard label={c.label}><p>{c.front}</p><p slot="back">{c.back}</p></Flashcard>)}
+          </div>
+        </>
+      )}
+      {course.quiz && (
+        <>
+          <h2 id="quiz">Quiz khởi động</h2>
+          <QuizSet title={`Khởi động ${course.title}`}>
+            {course.quiz.map((item, i) => <Quiz number={i + 1} {...item} />)}
+          </QuizSet>
+        </>
+      )}
+    </>
+  )}
+</CourseLayout>

@@ -1,0 +1,158 @@
+---
+import BaseLayout from '../layouts/BaseLayout.astro';
+import Button from '../design-system/components/Button.astro';
+import Icon from '../design-system/components/Icon.astro';
+import Callout from '../design-system/components/Callout.astro';
+import CourseCard from '../design-system/components/CourseCard.astro';
+import ArticleCard from '../design-system/components/ArticleCard.astro';
+import { courses } from '../data/courses';
+import { articlesByDate, readingMinutes, formatDate } from '../data/articles';
+import '../styles/landing.css';
+
+const base = import.meta.env.BASE_URL.replace(/\/$/, '');
+const ready = courses.filter((c) => c.ready);
+
+const steps = [
+  { icon: 'file-text', title: 'Viết trong Obsidian', text: 'Mỗi khái niệm là một ghi chú markdown. Gõ [[tên khái niệm]] để nối các môn với nhau.' },
+  { icon: 'search', title: 'Tự liên kết', text: 'Website dựng mục lục, backlink và tìm kiếm từ chính các ghi chú, không phải nhập lại.' },
+  { icon: 'book-open', title: 'Học và ôn tập', text: 'Đọc theo cột chữ dễ chịu, lật flashcard, làm quiz và ca lâm sàng ngay trên trang.' }
+];
+const features = [
+  { icon: 'lightbulb', title: 'Flashcard lật thẻ', text: 'Đánh dấu thẻ cần ôn để quay lại sau.' },
+  { icon: 'check', title: 'Quiz có giải thích', text: 'Trả lời xong thấy ngay đúng sai và lý do.' },
+  { icon: 'flask', title: 'Ca lâm sàng', text: 'Áp dụng tiêu chuẩn chẩn đoán vào tình huống thật.' },
+  { icon: 'moon', title: 'Sáng và tối', text: 'Tự theo hệ thống, chuyển tay bất cứ lúc nào.' }
+];
+---
+<BaseLayout title="Psy" description="Wiki các môn cử nhân Tâm lý. Chọn một môn để đọc, lật thẻ, làm quiz và ca lâm sàng.">
+  <main id="main" class="lp" tabindex="-1">
+
+    <section class="lp-hero" aria-labelledby="hero-title" data-hero>
+      <div class="lp-hero__glow" aria-hidden="true"></div>
+      <div class="container lp-hero__inner">
+        <p class="lp-eyebrow" data-reveal>Wiki cử nhân Tâm lý</p>
+        <h1 id="hero-title" data-reveal style="--reveal-i:1">Học tâm lý,<br /><span class="lp-hero__em">có hệ thống.</span></h1>
+        <p class="lp-lead" data-reveal style="--reveal-i:2">Ghi chú các môn học viết trong Obsidian, nối với nhau và xuất bản thành website để đọc, ôn tập và tra cứu. Mỗi môn có một trang riêng.</p>
+        <div class="lp-hero__cta" data-reveal style="--reveal-i:3">
+          <Button size="lg" href="#mon-hoc">Chọn môn học<Icon slot="icon-end" name="arrow-right" size={18} /></Button>
+          {ready[0] && <Button size="lg" variant="secondary" href={`${base}/${ready[0].slug}/`}>Vào {ready[0].title}</Button>}
+        </div>
+
+        <ul class="lp-chips" aria-label="Các môn đã có" data-reveal style="--reveal-i:4">
+          {ready.map((c, i) => (
+            <li style={`--i:${i}`}>
+              <a class="lp-chip" href={`${base}/${c.slug}/`}><span class="lp-chip__dot" aria-hidden="true"></span>{c.title}</a>
+            </li>
+          ))}
+        </ul>
+
+        <dl class="lp-stats" data-reveal style="--reveal-i:5">
+          <div><dt>Môn đã có nội dung</dt><dd><span data-count={ready.length}>{ready.length}</span></dd></div>
+          <div><dt>Môn trong lộ trình</dt><dd><span data-count={courses.length}>{courses.length}</span></dd></div>
+        </dl>
+      </div>
+    </section>
+
+    <section class="lp-sec lp-sec--tint" id="mon-hoc" aria-labelledby="courses-title">
+      <div class="container">
+        <header class="lp-sec__head" data-reveal>
+          <p class="lp-eyebrow">Môn học</p>
+          <h2 id="courses-title">Chọn một môn để bắt đầu</h2>
+          <p class="lp-sec__sub">Mỗi môn có một cuốn sách riêng với mục lục bên trái, và dùng chung hệ thống khái niệm.</p>
+        </header>
+        <div class="lp-courses">
+          {courses.map((c) => (
+            <CourseCard code={c.code} title={c.title} description={c.description} lessons={c.lessons}
+              href={c.ready ? `${base}/${c.slug}/` : undefined} soon={!c.ready} />
+          ))}
+        </div>
+      </div>
+    </section>
+
+    <section class="lp-sec" aria-labelledby="art-title">
+      <div class="container lp-narrow">
+        <header class="lp-sec__head" data-reveal>
+          <p class="lp-eyebrow">Bài viết học thuật</p>
+          <h2 id="art-title">Đọc sâu hơn một khái niệm</h2>
+          <p class="lp-sec__sub">Các bài phân tích ngắn, có trích dẫn và tài liệu tham khảo.</p>
+        </header>
+        <div>
+          {articlesByDate.slice(0, 3).map((a, i) => (
+            <ArticleCard href={`${base}/bai-viet/${a.slug}/`} title={a.title} excerpt={a.abstract} date={formatDate(a.date)} minutes={readingMinutes(a)} tags={a.tags} course={a.course} courseTitle={a.courseTitle} draft={a.status === 'draft'} seed={i} />
+          ))}
+        </div>
+        <p class="lp-back" data-reveal><a href={`${base}/bai-viet/`}>Xem tất cả bài viết <Icon name="arrow-right" size={16} /></a></p>
+      </div>
+    </section>
+
+    <section class="lp-sec lp-sec--tint" aria-labelledby="how-title">
+      <div class="container">
+        <header class="lp-sec__head" data-reveal>
+          <p class="lp-eyebrow">Hệ thống</p>
+          <h2 id="how-title">Một ghi chú, thành một trang học</h2>
+          <p class="lp-sec__sub">Bạn chỉ viết markdown. Phần còn lại là việc của website.</p>
+        </header>
+
+        <ol class="lp-steps">
+          {steps.map((s, i) => (
+            <li class="lp-step" data-reveal style={`--reveal-i:${i}`}>
+              <span class="lp-step__icon"><Icon name={s.icon} size={22} /></span>
+              <span class="lp-step__n" aria-hidden="true">{i + 1}</span>
+              <h3>{s.title}</h3>
+              <p>{s.text}</p>
+            </li>
+          ))}
+        </ol>
+
+        <div class="lp-demo" data-reveal>
+          <div class="lp-seg" role="tablist" aria-label="Xem ghi chú hoặc trang web">
+            <button type="button" role="tab" id="demo-tab-src" aria-controls="demo-src" aria-selected="true">Ghi chú Obsidian</button>
+            <button type="button" role="tab" id="demo-tab-web" aria-controls="demo-web" aria-selected="false" tabindex="-1">Trang web</button>
+            <span class="lp-seg__thumb" aria-hidden="true"></span>
+          </div>
+          <div class="lp-demo__stage">
+            <div id="demo-src" role="tabpanel" aria-labelledby="demo-tab-src" class="lp-demo__pane">
+              <pre class="lp-code"><code>{'> [!definition] Triệu chứng dương tính\n> Biểu hiện xuất hiện thêm so với bình thường,\n> như ảo giác và hoang tưởng.\n\nXem thêm [[Phổ loạn thần]] và [[Triệu chứng âm tính]].'}</code></pre>
+            </div>
+            <div id="demo-web" role="tabpanel" aria-labelledby="demo-tab-web" class="lp-demo__pane" hidden>
+              <Callout type="definition" title="Triệu chứng dương tính">
+                Biểu hiện xuất hiện thêm so với bình thường, như ảo giác và hoang tưởng.
+              </Callout>
+              <p class="lp-demo__links">Xem thêm <a class="wikilink" href={`${base}/tam-benh-hoc/loan-than/`}>Phổ loạn thần</a> và <a class="wikilink is-missing" href="#how-title" aria-disabled="true" tabindex="-1">Triệu chứng âm tính</a>.</p>
+            </div>
+          </div>
+        </div>
+
+        <ul class="lp-feats">
+          {features.map((f, i) => (
+            <li class="lp-feat" data-reveal style={`--reveal-i:${i}`}>
+              <span class="lp-feat__icon"><Icon name={f.icon} size={18} /></span>
+              <div><h3>{f.title}</h3><p>{f.text}</p></div>
+            </li>
+          ))}
+        </ul>
+      </div>
+    </section>
+
+    {ready[0] && (
+      <section class="lp-cta" aria-labelledby="cta-title">
+        <div class="container">
+          <h2 id="cta-title" data-reveal>Bắt đầu với {ready[0].title}</h2>
+          <p data-reveal style="--reveal-i:1">{ready[0].description}</p>
+          <div data-reveal style="--reveal-i:2">
+            <Button size="lg" href={`${base}/${ready[0].slug}/`}>Vào môn học<Icon slot="icon-end" name="arrow-right" size={18} /></Button>
+          </div>
+        </div>
+      </section>
+    )}
+
+    <footer class="lp-foot">
+      <div class="container">
+        <span>Psy, wiki cử nhân Tâm lý</span>
+        <a href={`${base}/design-system/`}>Design system</a>
+      </div>
+    </footer>
+  </main>
+</BaseLayout>
+
+<script>import '../scripts/landing.ts';</script>

@@ -1,0 +1,80 @@
+---
+// Mục lục "Trên trang này" với scrollspy; thanh nhấn trượt mượt giữa các mục.
+// States: default, hover, focus, active (theo vị trí cuộn), empty (<2 heading thì ẩn, trừ khi showEmpty).
+interface Heading { depth: number; slug: string; text: string }
+interface Props { headings: Heading[]; title?: string; showEmpty?: boolean; activeSlug?: string }
+const { headings, title = 'Trên trang này', showEmpty = false, activeSlug } = Astro.props;
+const items = headings.filter((h) => h.depth >= 2 && h.depth <= 3);
+const show = items.length >= 2;
+---
+{show ? (
+  <psy-toc class="toc" data-initial={activeSlug}>
+    <nav aria-label={title}>
+      <p class="toc__title">{title}</p>
+      <ol role="list" class="toc__list">
+        <span class="toc__indicator" aria-hidden="true"></span>
+        {items.map((h) => (
+          <li class:list={['toc__item', h.depth === 3 && 'toc__item--sub']}>
+            <a class:list={['toc__link', h.slug === activeSlug && 'is-active']} href={`#${h.slug}`}>{h.text}</a>
+          </li>
+        ))}
+      </ol>
+    </nav>
+  </psy-toc>
+) : showEmpty ? (
+  <div class="toc toc--empty"><p class="toc__title">{title}</p><p class="toc__empty">Bài này chưa có mục con.</p></div>
+) : null}
+
+<style is:global>
+  .toc { display: block; font-family: var(--font-sans); font-size: var(--text-sm); }
+  .toc__title { margin-bottom: var(--space-3); font-size: var(--text-xs); font-weight: var(--weight-bold); letter-spacing: var(--tracking-caps); text-transform: uppercase; color: var(--color-text-muted); }
+  .toc__list { position: relative; margin: 0; padding: 0; border-left: 1px solid var(--color-border-default); }
+  .toc__indicator {
+    position: absolute; left: -1px; top: 0; width: 2px; height: var(--_h, 0); border-radius: 2px; background: var(--accent-solid);
+    transform: translateY(var(--_y, 0)); opacity: var(--_o, 0);
+    transition: transform var(--duration-slow) var(--ease-spring), height var(--duration-slow) var(--ease-spring), opacity var(--duration-fast);
+  }
+  .toc__link { display: block; padding: 0.3rem var(--space-3); color: var(--color-text-muted); text-decoration: none; line-height: var(--leading-snug); transition: color var(--duration-fast), padding var(--duration-base) var(--ease-spring), background-color var(--duration-fast); border-radius: 0 var(--radius-sm) var(--radius-sm) 0; }
+  .toc__item--sub .toc__link { padding-left: var(--space-6); font-size: var(--text-xs); }
+  .toc__link:hover { color: var(--color-text-primary); background: var(--color-bg-subtle); }
+  .toc__link:active { background: var(--color-bg-sunken); }
+  .toc__link:focus-visible { outline: 2px solid var(--accent-solid); outline-offset: -2px; }
+  .toc__link.is-active { color: var(--accent-text); font-weight: var(--weight-semibold); }
+  .toc__empty { color: var(--color-text-muted); font-size: var(--text-sm); }
+</style>
+
+<script>
+  class PsyToc extends HTMLElement {
+    connectedCallback() {
+      if (this.dataset.ready) return;
+      this.dataset.ready = '1';
+      this.links = [...this.querySelectorAll('.toc__link')];
+      const heads = this.links.map((a) => document.getElementById(decodeURIComponent(a.getAttribute('href').slice(1)))).filter(Boolean);
+      const setActive = (id) => {
+        this.links.forEach((a) => a.classList.toggle('is-active', decodeURIComponent(a.getAttribute('href').slice(1)) === id));
+        const cur = this.querySelector('.is-active');
+        const ind = this.querySelector('.toc__indicator');
+        if (cur) {
+          const li = cur.closest('li');
+          ind.style.setProperty('--_y', li.offsetTop + 'px');
+          ind.style.setProperty('--_h', li.offsetHeight + 'px');
+          ind.style.setProperty('--_o', '1');
+          cur.setAttribute('aria-current', 'location');
+          this.links.filter((a) => a !== cur).forEach((a) => a.removeAttribute('aria-current'));
+        }
+      };
+      if (this.dataset.initial) setActive(this.dataset.initial);
+      else if (heads[0]) setActive(heads[0].id);
+      if (!heads.length || !('IntersectionObserver' in window)) return;
+      const visible = new Set();
+      const io = new IntersectionObserver((entries) => {
+        entries.forEach((e) => (e.isIntersecting ? visible.add(e.target) : visible.delete(e.target)));
+        const first = heads.find((h) => visible.has(h));
+        if (first) setActive(first.id);
+      }, { rootMargin: '-72px 0px -65% 0px' });
+      heads.forEach((h) => io.observe(h));
+      this.links.forEach((a) => a.addEventListener('click', () => setActive(decodeURIComponent(a.getAttribute('href').slice(1)))));
+    }
+  }
+  if (!customElements.get('psy-toc')) customElements.define('psy-toc', PsyToc);
+</script>

@@ -1,0 +1,95 @@
+---
+// Flashcard lật 3D. Slot mặc định = mặt trước, slot "back" = mặt sau.
+// States: front, hover (nâng lên), focus, active, flipped, marked (đánh dấu cần ôn).
+// Reduced motion: chuyển sang cross-fade thay vì xoay.
+import Icon from './Icon.astro';
+interface Props { flipped?: boolean; marked?: boolean; label?: string }
+const { flipped = false, marked = false, label = 'Thẻ ghi nhớ' } = Astro.props;
+---
+<psy-flashcard class="fc" data-flipped={String(flipped)} data-marked={String(marked)} data-reveal>
+  <div class="fc__card" role="button" tabindex="0" aria-pressed={String(flipped)} aria-label={`${label}. Nhấn để lật`}>
+    <div class="fc__inner">
+      <div class="fc__face fc__face--front">
+        <span class="fc__tag">Câu hỏi</span>
+        <div class="fc__content"><slot /></div>
+        <span class="fc__hint"><Icon name="rotate-ccw" size={14} /> Nhấn để lật</span>
+      </div>
+      <div class="fc__face fc__face--back">
+        <span class="fc__tag">Đáp án</span>
+        <div class="fc__content"><slot name="back" /></div>
+        <span class="fc__hint"><Icon name="rotate-ccw" size={14} /> Nhấn để lật lại</span>
+      </div>
+    </div>
+  </div>
+  <button type="button" class="fc__mark" aria-pressed={String(marked)}>
+    <Icon name="star" size={16} /><span>{marked ? 'Đã đánh dấu cần ôn' : 'Đánh dấu cần ôn'}</span>
+  </button>
+</psy-flashcard>
+
+<style is:global>
+  .fc { display: block; width: 100%; max-width: 26rem; perspective: 1200px; }
+  .fc__card { cursor: pointer; border-radius: var(--radius-xl); outline-offset: 4px; -webkit-tap-highlight-color: transparent; transition: transform var(--duration-base) var(--ease-spring); }
+  .fc__card:hover, .fc__card.is-hover { transform: translateY(-4px); }
+  .fc__card:active, .fc__card.is-active { transform: translateY(0) scale(0.985); transition-duration: var(--duration-instant); }
+  .fc__card:focus-visible, .fc__card.is-focus { outline: 2px solid var(--accent-solid); border-radius: var(--radius-xl); }
+  .fc__inner { display: grid; transform-style: preserve-3d; transition: transform var(--duration-slower) var(--ease-spring); }
+  .fc[data-flipped="true"] .fc__inner { transform: rotateY(180deg); }
+
+  .fc__face {
+    grid-area: 1 / 1; display: flex; flex-direction: column; justify-content: space-between; gap: var(--space-4);
+    min-height: 13rem; padding: var(--space-5); border: 1px solid var(--color-border-default); border-radius: var(--radius-xl);
+    background: var(--color-bg-surface); box-shadow: var(--shadow-md); backface-visibility: hidden; -webkit-backface-visibility: hidden;
+    transition: box-shadow var(--duration-base);
+  }
+  .fc__card:hover .fc__face { box-shadow: var(--shadow-lg); }
+  .fc__face--back { transform: rotateY(180deg); background: var(--accent-tint); border-color: var(--accent-border); }
+  .fc__tag { align-self: flex-start; font-size: var(--text-xs); font-weight: var(--weight-bold); letter-spacing: var(--tracking-caps); text-transform: uppercase; color: var(--accent-text); }
+  .fc__content { flex: 1; display: grid; align-content: center; font-family: var(--font-serif); font-size: var(--text-lg); line-height: var(--leading-snug); text-wrap: balance; }
+  .fc__content > * + * { margin-top: var(--space-2); }
+  .fc__hint { display: inline-flex; align-items: center; gap: var(--space-1); align-self: flex-end; font-size: var(--text-xs); color: var(--color-text-muted); transition: color var(--duration-fast); }
+  .fc__card:hover .fc__hint { color: var(--accent-text); }
+  .fc__card:hover .fc__hint svg { transform: rotate(-90deg); }
+  .fc__hint svg { transition: transform var(--duration-base) var(--ease-spring); }
+
+  .fc__mark { display: inline-flex; align-items: center; gap: var(--space-2); margin-top: var(--space-3); padding: var(--space-1) var(--space-3) var(--space-1) var(--space-2); border-radius: var(--radius-pill); font-size: var(--text-xs); font-weight: var(--weight-medium); color: var(--color-text-muted); transition: background-color var(--duration-fast), color var(--duration-fast), transform var(--duration-fast) var(--ease-spring); }
+  .fc__mark:hover { background: var(--color-bg-subtle); color: var(--color-text-primary); }
+  .fc__mark:active { transform: scale(0.95); }
+  .fc__mark svg { transition: transform var(--duration-base) var(--ease-spring), fill var(--duration-fast); }
+  .fc__mark[aria-pressed="true"] { color: var(--warning-text); background: var(--warning-tint); }
+  .fc__mark[aria-pressed="true"] svg { fill: var(--warning-solid); stroke: var(--warning-solid); transform: rotate(72deg) scale(1.15); }
+
+  @media (prefers-reduced-motion: reduce) {
+    .fc__inner { transform: none !important; }
+    .fc__face--back { transform: none; opacity: 0; transition: opacity var(--duration-base); }
+    .fc[data-flipped="true"] .fc__face--back { opacity: 1; }
+    .fc[data-flipped="true"] .fc__face--front { opacity: 0; }
+  }
+</style>
+
+<script>
+  class PsyFlashcard extends HTMLElement {
+    connectedCallback() {
+      if (this.dataset.ready) return;
+      this.dataset.ready = '1';
+      const card = this.querySelector('.fc__card');
+      const mark = this.querySelector('.fc__mark');
+      const flip = () => {
+        const on = this.dataset.flipped !== 'true';
+        this.dataset.flipped = String(on);
+        card.setAttribute('aria-pressed', String(on));
+      };
+      card.addEventListener('click', flip);
+      card.addEventListener('keydown', (e) => {
+        if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); flip(); }
+      });
+      mark.addEventListener('click', () => {
+        const on = mark.getAttribute('aria-pressed') !== 'true';
+        mark.setAttribute('aria-pressed', String(on));
+        this.dataset.marked = String(on);
+        mark.querySelector('span').textContent = on ? 'Đã đánh dấu cần ôn' : 'Đánh dấu cần ôn';
+        this.dispatchEvent(new CustomEvent('flashcard:mark', { bubbles: true, detail: { marked: on } }));
+      });
+    }
+  }
+  if (!customElements.get('psy-flashcard')) customElements.define('psy-flashcard', PsyFlashcard);
+</script>

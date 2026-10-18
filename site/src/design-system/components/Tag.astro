@@ -1,0 +1,54 @@
+---
+// Tag/Pill. variant: neutral | accent | success | danger | warning | info.
+// href -> link, interactive -> toggle button (aria-pressed). States: default, hover, focus, active, selected, disabled.
+interface Props {
+  variant?: 'neutral' | 'accent' | 'success' | 'danger' | 'warning' | 'info';
+  size?: 'sm' | 'md';
+  href?: string;
+  interactive?: boolean;
+  selected?: boolean;
+  disabled?: boolean;
+  class?: string;
+  [attr: string]: unknown;
+}
+const { variant = 'neutral', size = 'md', href, interactive = false, selected = false, disabled = false, class: className, ...rest } = Astro.props;
+const Tag = href && !disabled ? 'a' : interactive ? 'button' : 'span';
+const cls = ['tag', `tag--${variant}`, `tag--${size}`, (href || interactive) && !disabled && 'tag--action', selected && 'is-selected', disabled && 'is-disabled', className].filter(Boolean).join(' ');
+const extra = Tag === 'button' ? { type: 'button', 'aria-pressed': String(selected), disabled } : Tag === 'a' ? { href } : {};
+---
+<Tag class={cls} {...rest} {...extra}>
+  <svg class="tag__check" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M20 6 9 17l-5-5" /></svg>
+  <slot />
+</Tag>
+
+<style is:global>
+  .tag {
+    --_tint: var(--color-bg-subtle); --_strong: var(--color-bg-sunken); --_text: var(--color-text-secondary); --_border: var(--color-border-default);
+    --_solid: var(--color-text-primary); --_on: var(--color-bg-page);
+    display: inline-flex; align-items: center; gap: var(--space-1);
+    padding: 0.2rem 0.65rem; font-family: var(--font-sans); font-size: var(--text-xs); font-weight: var(--weight-medium); line-height: 1.4;
+    background: var(--_tint); color: var(--_text); border: 1px solid var(--_border); border-radius: var(--radius-pill);
+    text-decoration: none; white-space: nowrap;
+    transition: transform var(--duration-fast) var(--ease-spring), background-color var(--duration-fast), color var(--duration-fast), border-color var(--duration-fast);
+  }
+  .tag--sm { padding: 0.1rem 0.5rem; font-size: 0.6875rem; }
+  .tag--neutral { --_border: var(--color-border-subtle); }
+  .tag--accent { --_tint: var(--accent-tint); --_strong: var(--accent-tint-strong); --_text: var(--accent-text); --_border: var(--accent-border); --_solid: var(--accent-solid); --_on: var(--accent-on-solid); }
+  .tag--success { --_tint: var(--success-tint); --_strong: var(--success-tint-strong); --_text: var(--success-text); --_border: var(--success-border); --_solid: var(--success-solid); --_on: var(--success-on-solid); }
+  .tag--danger { --_tint: var(--danger-tint); --_strong: var(--danger-tint-strong); --_text: var(--danger-text); --_border: var(--danger-border); --_solid: var(--danger-solid); --_on: var(--danger-on-solid); }
+  .tag--warning { --_tint: var(--warning-tint); --_strong: var(--warning-tint-strong); --_text: var(--warning-text); --_border: var(--warning-border); --_solid: var(--warning-solid); --_on: var(--warning-on-solid); }
+  .tag--info { --_tint: var(--info-tint); --_strong: var(--info-tint-strong); --_text: var(--info-text); --_border: var(--info-border); --_solid: var(--info-solid); --_on: var(--info-on-solid); }
+
+  .tag__check { width: 0; opacity: 0; margin-right: 0; transform: scale(0.4); transition: width var(--duration-base) var(--ease-spring), opacity var(--duration-fast), transform var(--duration-base) var(--ease-spring); }
+
+  .tag--action { cursor: pointer; }
+  .tag--action:hover, .tag--action.is-hover { background: var(--_strong); transform: translateY(-1px); }
+  .tag--action:active, .tag--action.is-active { transform: scale(0.95); transition-duration: var(--duration-instant); }
+  .tag--action:focus-visible, .tag--action.is-focus { outline: 2px solid var(--accent-solid); outline-offset: 2px; border-radius: var(--radius-pill); }
+
+  .tag.is-selected { background: var(--_solid); color: var(--_on); border-color: var(--_solid); }
+  .tag.is-selected .tag__check { width: 12px; opacity: 1; transform: none; }
+  .tag.is-selected.tag--action:hover, .tag.is-selected.is-hover { background: var(--_solid); filter: brightness(1.08); }
+
+  .tag.is-disabled { background: var(--color-bg-sunken); color: var(--color-text-disabled); border-color: transparent; cursor: not-allowed; transform: none; }
+</style>

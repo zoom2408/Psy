@@ -1,0 +1,65 @@
+---
+// Header dính trên cùng. Mobile: nút menu mở drawer (phát sự kiện 'psy:toggle-nav').
+// States: logo hover/focus/active, menu button hover/active/pressed, đổ bóng khi cuộn.
+import Icon from './Icon.astro';
+import SearchBox from './SearchBox.astro';
+import ThemeToggle from './ThemeToggle.astro';
+interface Props { showMenu?: boolean; homeHref?: string; siteName?: string }
+const { showMenu = false, homeHref = import.meta.env.BASE_URL, siteName = 'Psy' } = Astro.props;
+const base = import.meta.env.BASE_URL.replace(/\/$/, '');
+---
+<header class="hd" data-scrolled="false">
+  <div class="hd__inner">
+    {showMenu && (
+      <button type="button" class="hd__menu" aria-label="Mở mục lục" aria-expanded="false" aria-controls="doc-nav" data-nav-toggle>
+        <Icon name="menu" size={20} />
+      </button>
+    )}
+    <a class="hd__logo" href={homeHref} aria-label={`${siteName}, trang chủ`}>
+      <span class="hd__mark" aria-hidden="true">Ψ</span>
+      <span class="hd__name">{siteName}</span>
+    </a>
+    <nav class="hd__nav" aria-label="Chính">
+      <a href={`${base}/#mon-hoc`}>Môn học</a>
+      <a href={`${base}/bai-viet/`} aria-current={Astro.url.pathname.startsWith(`${base}/bai-viet`) ? 'page' : undefined}>Bài viết</a>
+    </nav>
+    <div class="hd__search"><SearchBox id="hd-search" /></div>
+    <div class="hd__actions"><slot name="actions" /><ThemeToggle /></div>
+  </div>
+</header>
+
+<style is:global>
+  .hd { position: sticky; top: 0; z-index: var(--z-header); height: var(--layout-header-h); background: color-mix(in srgb, var(--color-bg-page) 88%, transparent); backdrop-filter: saturate(1.4) blur(12px); -webkit-backdrop-filter: saturate(1.4) blur(12px); border-bottom: 1px solid transparent; transition: border-color var(--duration-base), box-shadow var(--duration-base); }
+  .hd[data-scrolled="true"] { border-bottom-color: var(--color-border-subtle); box-shadow: var(--shadow-sm); }
+  .hd__inner { display: flex; align-items: center; gap: var(--space-3); height: 100%; max-width: var(--layout-container); margin-inline: auto; padding-inline: var(--layout-gutter); }
+  .hd__menu { display: none; place-items: center; width: 2.25rem; height: 2.25rem; margin-left: calc(-1 * var(--space-2)); border-radius: var(--radius-md); color: var(--color-text-secondary); transition: background-color var(--duration-fast), transform var(--duration-fast) var(--ease-spring); }
+  .hd__menu:hover { background: var(--color-bg-subtle); color: var(--color-text-primary); }
+  .hd__menu:active { transform: scale(0.9); }
+  .hd__menu[aria-expanded="true"] { background: var(--accent-tint); color: var(--accent-text); }
+  .hd__logo { display: inline-flex; align-items: center; gap: var(--space-2); padding: var(--space-1) var(--space-2); margin-left: calc(-1 * var(--space-2)); border-radius: var(--radius-md); color: var(--color-text-primary); text-decoration: none; transition: transform var(--duration-fast) var(--ease-spring); }
+  .hd__logo:hover .hd__mark { transform: rotate(-12deg) scale(1.1); }
+  .hd__logo:active { transform: scale(0.95); }
+  .hd__logo:focus-visible { outline: 2px solid var(--accent-solid); outline-offset: 2px; }
+  .hd__mark { display: grid; place-items: center; width: 1.9rem; height: 1.9rem; font-family: var(--font-serif); font-size: 1.15rem; font-weight: var(--weight-bold); color: var(--accent-on-solid); background: var(--accent-solid); border-radius: var(--radius-md); transition: transform var(--duration-base) var(--ease-spring); }
+  .hd__name { font-family: var(--font-serif); font-size: var(--text-lg); font-weight: var(--weight-bold); letter-spacing: var(--tracking-tight); }
+  .hd__nav { display: none; gap: var(--space-1); }
+  .hd__nav a { padding: var(--space-2) var(--space-3); border-radius: var(--radius-md); font-family: var(--font-sans); font-size: var(--text-sm); font-weight: var(--weight-medium); color: var(--color-text-secondary); text-decoration: none; transition: background-color var(--duration-fast), color var(--duration-fast), transform var(--duration-fast) var(--ease-spring); }
+  .hd__nav a:hover { background: var(--color-bg-subtle); color: var(--color-text-primary); }
+  .hd__nav a:active { transform: scale(0.95); }
+  .hd__nav a[aria-current="page"] { color: var(--accent-text); background: var(--accent-tint); }
+  .hd__nav a:focus-visible { outline: 2px solid var(--accent-solid); outline-offset: 2px; }
+  @media (min-width: 768px) { .hd__nav { display: flex; } }
+  .hd__search { flex: 1; display: flex; justify-content: center; min-width: 0; }
+  .hd__actions { display: flex; align-items: center; gap: var(--space-1); margin-left: auto; }
+  @media (max-width: 1023px) { .hd__menu { display: grid; } }
+  @media (max-width: 639px) { .hd__name { display: none; } .sb__kbd { display: none; } }
+</style>
+
+<script>
+  const hd = document.querySelector('.hd');
+  if (hd) {
+    const set = () => (hd.dataset.scrolled = String(scrollY > 4));
+    addEventListener('scroll', set, { passive: true });
+    set();
+  }
+</script>

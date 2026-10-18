@@ -1,0 +1,50 @@
+---
+// Khung đọc kiểu GitBook cho một môn: sidebar mục lục | nội dung | "Trên trang này" + Trước/Sau.
+import DocLayout from './DocLayout.astro';
+import CourseTree from '../design-system/components/CourseTree.astro';
+import Toc from '../design-system/components/Toc.astro';
+import PrevNext from '../design-system/components/PrevNext.astro';
+import Breadcrumb from '../design-system/components/Breadcrumb.astro';
+import Icon from '../design-system/components/Icon.astro';
+import { coursePages, type Course } from '../data/courses';
+import { articlesOf } from '../data/articles';
+import '../styles/course-doc.css';
+
+interface Props { course: Course; pageId: string; title: string; description?: string; headings?: { depth: number; slug: string; text: string }[] }
+const { course, pageId, title, description, headings = [] } = Astro.props;
+const base = import.meta.env.BASE_URL.replace(/\/$/, '');
+const pg = coursePages(course, base);
+const idx = pg.all.findIndex((p) => p.id === pageId);
+const current = pg.all[idx];
+const prev = pg.all[idx - 1], next = pg.all[idx + 1];
+const related = articlesOf(course.slug);
+const groups = [
+  { title: 'Bắt đầu', items: [pg.intro] },
+  { title: 'Chuyên đề', items: pg.modules },
+  ...(pg.review ? [{ title: 'Ôn tập', items: [pg.review] }] : []),
+  ...(related.length ? [{ title: 'Bài viết học thuật', items: related.map((a) => ({ id: a.slug, title: a.title, href: `${base}/bai-viet/${a.slug}/` })) }] : [])
+].map((g) => ({ title: g.title, open: true, items: g.items.map((i) => ({ title: i.title, href: i.href, current: i.id === pageId })) }));
+const crumbs = [
+  { label: 'Trang chủ', href: `${base}/` },
+  { label: course.title, href: pageId ? pg.intro.href : undefined },
+  ...(pageId ? [{ label: current.title }] : [])
+];
+---
+<DocLayout title={pageId ? `${current.title} | ${course.title}` : course.title} description={description ?? course.description} progress>
+  <Fragment slot="nav">
+    <a class="cnav__head" href={pg.intro.href}>
+      <span class="cnav__code">{course.code}</span>
+      <span class="cnav__title">{course.title}</span>
+    </a>
+    <CourseTree groups={groups} label={`Mục lục ${course.title}`} />
+    <a class="cnav__home" href={`${base}/`}><Icon name="arrow-left" size={14} /> Tất cả môn học</a>
+  </Fragment>
+  <Toc slot="toc" headings={headings} />
+  <div class="cdoc">
+    <Breadcrumb items={crumbs} />
+    <article class="prose cdoc__article">
+      <slot />
+    </article>
+    <PrevNext prev={prev && { title: prev.title, href: prev.href }} next={next && { title: next.title, href: next.href }} />
+  </div>
+</DocLayout>

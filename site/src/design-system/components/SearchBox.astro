@@ -1,0 +1,169 @@
+---
+// SearchBox (giao diện + hành vi). Nguồn dữ liệu cắm sau (vd Pagefind) qua sự kiện:
+//   lắng nghe 'psy-search:query' {query} -> gọi el.setState('loading') -> el.setResults([...]) | el.setState('error')
+// Phím tắt: "/" hoặc Ctrl/Cmd+K để focus; ↑ ↓ chọn; Enter mở; Esc đóng/xóa.
+// States: idle, hover, focus, typing (nút xóa hiện), loading (skeleton + spinner), results, empty, error (thử lại).
+import Icon from './Icon.astro';
+interface Result { title: string; href: string; course?: string; excerpt?: string }
+interface Props {
+  placeholder?: string; value?: string; id?: string;
+  state?: 'idle' | 'results' | 'loading' | 'empty' | 'error'; results?: Result[]; forceOpen?: boolean; focused?: boolean;
+}
+const { placeholder = 'Tìm bài, khái niệm, nhà tâm lý...', value = '', id = 'sb', state = 'idle', results = [], forceOpen = false, focused = false } = Astro.props;
+---
+<psy-search class:list={['sb', focused && 'is-focus']} data-state={state} data-open={String(forceOpen)}>
+  <form class="sb__form" role="search" onsubmit="return false">
+    <span class="sb__icon sb__icon--search"><Icon name="search" size={18} /></span>
+    <span class="sb__icon sb__icon--spin" aria-hidden="true"><span class="sb__spinner"></span></span>
+    <input class="sb__input" type="search" name="q" value={value} placeholder={placeholder} autocomplete="off" spellcheck="false"
+      role="combobox" aria-expanded={String(forceOpen)} aria-controls={`${id}-list`} aria-autocomplete="list" aria-label="Tìm kiếm" />
+    <button type="button" class="sb__clear" aria-label="Xóa nội dung tìm kiếm" hidden={!value}><Icon name="x" size={16} /></button>
+    <kbd class="sb__kbd" aria-hidden="true">/</kbd>
+  </form>
+  <div class="sb__panel" id={`${id}-list`} role="listbox" aria-label="Kết quả tìm kiếm">
+    <div class="sb__results">
+      {results.map((r, i) => (
+        <a class="sb__opt" role="option" id={`${id}-opt-${i}`} href={r.href}>
+          <span class="sb__opt-head"><span class="sb__opt-title">{r.title}</span>{r.course && <span class="sb__opt-course">{r.course}</span>}</span>
+          {r.excerpt && <span class="sb__opt-excerpt">{r.excerpt}</span>}
+        </a>
+      ))}
+    </div>
+    <div class="sb__msg sb__msg--loading" aria-hidden="true"><span class="sb__skel"></span><span class="sb__skel"></span><span class="sb__skel"></span></div>
+    <div class="sb__msg sb__msg--empty"><Icon name="search" size={20} /><p>Không tìm thấy kết quả cho “<span data-q>{value}</span>”</p><small>Thử từ khóa ngắn hơn hoặc tên tiếng Anh của khái niệm.</small></div>
+    <div class="sb__msg sb__msg--error" role="alert"><Icon name="circle-alert" size={20} /><p>Không tải được kết quả.</p><button type="button" class="sb__retry">Thử lại</button></div>
+  </div>
+</psy-search>
+
+<style is:global>
+  .sb { position: relative; width: 100%; max-width: 28rem; font-family: var(--font-sans); }
+  .sb__form { position: relative; display: flex; align-items: center; gap: var(--space-2); height: 2.5rem; padding: 0 var(--space-3); background: var(--color-bg-surface); border: 1px solid var(--color-border-default); border-radius: var(--radius-pill); transition: border-color var(--duration-fast), box-shadow var(--duration-base), background-color var(--duration-fast); }
+  .sb__form:hover { border-color: var(--color-border-strong); }
+  .sb__form:focus-within, .sb.is-focus .sb__form { border-color: var(--accent-solid); box-shadow: 0 0 0 3px var(--accent-tint-strong); }
+  .sb__icon { display: grid; color: var(--color-text-muted); transition: color var(--duration-fast), transform var(--duration-base) var(--ease-spring); }
+  .sb__form:focus-within .sb__icon--search, .sb.is-focus .sb__icon--search { color: var(--accent-text); transform: scale(1.1); }
+  .sb__icon--spin { display: none; }
+  .sb__spinner { width: 16px; height: 16px; border-radius: 50%; border: 2px solid var(--accent-solid); border-right-color: transparent; animation: btn-spin 700ms linear infinite; }
+  .sb[data-state="loading"] .sb__icon--search { display: none; }
+  .sb[data-state="loading"] .sb__icon--spin { display: grid; }
+  .sb__input { flex: 1; min-width: 0; height: 100%; background: none; border: 0; outline: none; font-size: var(--text-sm); color: var(--color-text-primary); }
+  .sb__input::placeholder { color: var(--color-text-muted); }
+  .sb__input::-webkit-search-cancel-button { display: none; }
+  .sb__clear { display: grid; place-items: center; width: 1.5rem; height: 1.5rem; border-radius: 50%; color: var(--color-text-muted); transition: background-color var(--duration-fast), color var(--duration-fast), transform var(--duration-fast) var(--ease-spring); animation: qset-in var(--duration-base) var(--ease-spring); }
+  .sb__clear[hidden] { display: none; }
+  .sb__clear:hover { background: var(--color-bg-sunken); color: var(--color-text-primary); }
+  .sb__clear:active { transform: scale(0.85); }
+  .sb__clear:focus-visible { outline: 2px solid var(--accent-solid); outline-offset: 1px; }
+  .sb__kbd { font-family: var(--font-mono); font-size: var(--text-xs); padding: 0 0.4rem; color: var(--color-text-muted); border: 1px solid var(--color-border-default); border-bottom-width: 2px; border-radius: var(--radius-sm); transition: opacity var(--duration-fast); }
+  .sb__form:focus-within .sb__kbd, .sb__input:not(:placeholder-shown) ~ .sb__kbd { opacity: 0; }
+
+  .sb__panel { position: absolute; z-index: var(--z-popover); inset: calc(100% + var(--space-2)) 0 auto 0; max-height: 22rem; overflow-y: auto; padding: var(--space-2); background: var(--color-bg-surface); border: 1px solid var(--color-border-default); border-radius: var(--radius-lg); box-shadow: var(--shadow-lg); opacity: 0; transform: translateY(-6px) scale(0.98); transform-origin: top; visibility: hidden; transition: opacity var(--duration-fast), transform var(--duration-base) var(--ease-spring), visibility 0s var(--duration-base); }
+  .sb[data-open="true"] .sb__panel { opacity: 1; transform: none; visibility: visible; transition-delay: 0s; }
+
+  .sb__results, .sb__msg { display: none; }
+  .sb[data-state="results"] .sb__results { display: grid; gap: 2px; }
+  .sb[data-state="loading"] .sb__msg--loading, .sb[data-state="empty"] .sb__msg--empty, .sb[data-state="error"] .sb__msg--error { display: grid; }
+  .sb__opt { display: grid; gap: 2px; padding: var(--space-2) var(--space-3); border-radius: var(--radius-md); color: inherit; text-decoration: none; transition: background-color var(--duration-fast), padding var(--duration-base) var(--ease-spring); }
+  .sb__opt:hover, .sb__opt.is-active { background: var(--accent-tint); padding-left: calc(var(--space-3) + 3px); }
+  .sb__opt.is-active { box-shadow: inset 3px 0 0 var(--accent-solid); }
+  .sb__opt:active { background: var(--accent-tint-strong); }
+  .sb__opt:focus-visible { outline: 2px solid var(--accent-solid); outline-offset: -2px; }
+  .sb__opt-head { display: flex; align-items: baseline; gap: var(--space-2); }
+  .sb__opt-title { font-size: var(--text-sm); font-weight: var(--weight-semibold); }
+  .sb__opt-title mark { background: var(--accent-tint-strong); color: var(--accent-text); border-radius: 2px; }
+  .sb__opt-course { font-size: var(--text-xs); color: var(--color-text-muted); }
+  .sb__opt-excerpt { font-family: var(--font-serif); font-size: var(--text-xs); color: var(--color-text-secondary); display: -webkit-box; -webkit-line-clamp: 1; -webkit-box-orient: vertical; overflow: hidden; }
+
+  .sb__msg--loading { gap: var(--space-2); padding: var(--space-2); }
+  .sb__skel { height: 2.25rem; border-radius: var(--radius-md); background: linear-gradient(90deg, var(--color-bg-subtle) 25%, var(--color-bg-sunken) 50%, var(--color-bg-subtle) 75%); background-size: 200% 100%; animation: shimmer 1.4s linear infinite; }
+  .sb__msg--empty, .sb__msg--error { justify-items: center; gap: var(--space-1); padding: var(--space-6) var(--space-4); text-align: center; color: var(--color-text-muted); }
+  .sb__msg p { color: var(--color-text-secondary); font-size: var(--text-sm); font-weight: var(--weight-medium); }
+  .sb__msg small { font-size: var(--text-xs); }
+  .sb__msg--error svg { color: var(--danger-solid); }
+  .sb__retry { margin-top: var(--space-2); padding: var(--space-1) var(--space-4); font-size: var(--text-sm); font-weight: var(--weight-medium); color: var(--accent-text); border: 1px solid var(--accent-border); border-radius: var(--radius-pill); transition: background-color var(--duration-fast), transform var(--duration-fast) var(--ease-spring); }
+  .sb__retry:hover { background: var(--accent-tint); }
+  .sb__retry:active { transform: scale(0.94); }
+  .sb__retry:focus-visible { outline: 2px solid var(--accent-solid); outline-offset: 2px; }
+</style>
+
+<script>
+  class PsySearch extends HTMLElement {
+    connectedCallback() {
+      if (this.dataset.ready) return;
+      this.dataset.ready = '1';
+      this.input = this.querySelector('.sb__input');
+      this.clear = this.querySelector('.sb__clear');
+      this.resultsEl = this.querySelector('.sb__results');
+      this.active = -1;
+      this.timer = 0;
+      this.pinned = this.dataset.open === 'true'; // trạng thái ép mở để catalog hiển thị
+      const sync = () => { this.clear.hidden = !this.input.value; };
+      this.input.addEventListener('input', () => {
+        sync();
+        clearTimeout(this.timer);
+        const q = this.input.value.trim();
+        if (!q) { this.setState('idle'); this.close(); return; }
+        this.timer = setTimeout(() => this.emit(q), 150);
+      });
+      this.input.addEventListener('focus', () => { if (this.input.value.trim() && this.dataset.state !== 'idle') this.open(); });
+      this.input.addEventListener('keydown', (e) => this.onKey(e));
+      this.clear.addEventListener('click', () => { this.input.value = ''; sync(); this.setState('idle'); this.close(); this.input.focus(); });
+      this.querySelector('.sb__retry').addEventListener('click', () => this.emit(this.input.value.trim()));
+      document.addEventListener('pointerdown', (e) => { if (!this.contains(e.target) && !this.pinned) this.close(); });
+      document.addEventListener('keydown', (e) => {
+        const typing = /^(input|textarea|select)$/i.test(document.activeElement?.tagName || '') || document.activeElement?.isContentEditable;
+        if ((e.key === '/' && !typing) || ((e.metaKey || e.ctrlKey) && e.key.toLowerCase() === 'k')) {
+          if (this.offsetParent === null) return;
+          e.preventDefault(); this.input.focus(); this.input.select();
+        }
+      });
+    }
+    emit(q) { this.querySelector('[data-q]').textContent = q; this.dispatchEvent(new CustomEvent('psy-search:query', { bubbles: true, detail: { query: q } })); }
+    open() { this.dataset.open = 'true'; this.input.setAttribute('aria-expanded', 'true'); }
+    close() { if (this.pinned) return; this.dataset.open = 'false'; this.input.setAttribute('aria-expanded', 'false'); this.setActive(-1); }
+    setState(s) { this.dataset.state = s; if (s !== 'idle') this.open(); }
+    setResults(items) {
+      this.resultsEl.replaceChildren();
+      const q = this.input.value.trim().toLowerCase();
+      items.forEach((r, i) => {
+        const a = document.createElement('a');
+        a.className = 'sb__opt'; a.setAttribute('role', 'option'); a.id = `${this.querySelector('.sb__panel').id}-opt-${i}`; a.href = r.href;
+        const head = document.createElement('span'); head.className = 'sb__opt-head';
+        const t = document.createElement('span'); t.className = 'sb__opt-title';
+        const idx = q ? r.title.toLowerCase().indexOf(q) : -1;
+        if (idx >= 0) {
+          t.append(r.title.slice(0, idx));
+          const m = document.createElement('mark'); m.textContent = r.title.slice(idx, idx + q.length); t.append(m, r.title.slice(idx + q.length));
+        } else t.textContent = r.title;
+        head.append(t);
+        if (r.course) { const c = document.createElement('span'); c.className = 'sb__opt-course'; c.textContent = r.course; head.append(c); }
+        a.append(head);
+        if (r.excerpt) { const x = document.createElement('span'); x.className = 'sb__opt-excerpt'; x.textContent = r.excerpt; a.append(x); }
+        this.resultsEl.append(a);
+      });
+      this.active = -1;
+      this.setState(items.length ? 'results' : 'empty');
+    }
+    options() { return [...this.querySelectorAll('.sb__opt')]; }
+    setActive(i) {
+      const opts = this.options();
+      opts.forEach((o, n) => o.classList.toggle('is-active', n === i));
+      this.active = i;
+      if (i >= 0) { this.input.setAttribute('aria-activedescendant', opts[i].id); opts[i].scrollIntoView({ block: 'nearest' }); }
+      else this.input.removeAttribute('aria-activedescendant');
+    }
+    onKey(e) {
+      const n = this.options().length;
+      if (e.key === 'ArrowDown' && n) { e.preventDefault(); this.open(); this.setActive((this.active + 1) % n); }
+      else if (e.key === 'ArrowUp' && n) { e.preventDefault(); this.setActive((this.active - 1 + n) % n); }
+      else if (e.key === 'Enter' && this.active >= 0) { e.preventDefault(); this.options()[this.active].click(); }
+      else if (e.key === 'Escape') {
+        e.preventDefault(); // chặn việc input[type=search] tự xóa nội dung
+        if (this.dataset.open === 'true' && !this.pinned) this.close();
+        else if (this.input.value) { this.input.value = ''; this.clear.hidden = true; this.setState('idle'); }
+        else this.input.blur();
+      }
+    }
+  }
+  if (!customElements.get('psy-search')) customElements.define('psy-search', PsySearch);
+</script>

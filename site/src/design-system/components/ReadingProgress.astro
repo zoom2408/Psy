@@ -1,0 +1,26 @@
+---
+// Thanh tiến độ đọc ở mép trên. Chỉ hiện khi trang đủ dài.
+---
+<div class="rp" aria-hidden="true"><div class="rp__bar"></div></div>
+
+<style is:global>
+  .rp { position: fixed; inset: 0 0 auto 0; height: 3px; z-index: var(--z-toast); pointer-events: none; }
+  .rp__bar { height: 100%; transform-origin: left; transform: scaleX(var(--rp, 0)); background: linear-gradient(90deg, var(--accent-solid), var(--success-solid)); border-radius: 0 3px 3px 0; }
+</style>
+
+<script>
+  const bar = document.querySelector('.rp');
+  if (bar) {
+    let raf = 0;
+    const update = () => {
+      raf = 0;
+      const max = document.documentElement.scrollHeight - innerHeight;
+      bar.style.opacity = max > 400 ? '1' : '0';
+      bar.style.setProperty('--rp', max > 0 ? String(Math.min(1, Math.max(0, scrollY / max))) : '0');
+    };
+    const req = () => { if (!raf) raf = requestAnimationFrame(update); };
+    addEventListener('scroll', req, { passive: true });
+    addEventListener('resize', req);
+    update();
+  }
+</script>

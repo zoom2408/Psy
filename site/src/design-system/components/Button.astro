@@ -1,0 +1,87 @@
+---
+// Button: variant primary | secondary | ghost | danger; size sm | md | lg.
+// States: default, hover, focus-visible, active, disabled, loading.
+// Class ép trạng thái (is-hover, is-active, is-focus) chỉ dùng cho trang catalog.
+interface Props {
+  variant?: 'primary' | 'secondary' | 'ghost' | 'danger';
+  size?: 'sm' | 'md' | 'lg';
+  href?: string;
+  type?: 'button' | 'submit' | 'reset';
+  disabled?: boolean;
+  loading?: boolean;
+  full?: boolean;
+  class?: string;
+  [attr: string]: unknown;
+}
+const { variant = 'primary', size = 'md', href, type = 'button', disabled = false, loading = false, full = false, class: className, ...rest } = Astro.props;
+const cls = ['btn', `btn--${variant}`, `btn--${size}`, full && 'btn--full', loading && 'is-loading', disabled && 'is-disabled', className].filter(Boolean).join(' ');
+const Tag = href && !disabled ? 'a' : 'button';
+const attrs = Tag === 'a' ? { href } : { type, disabled: disabled || loading ? true : undefined };
+---
+<Tag class={cls} aria-busy={loading ? 'true' : undefined} aria-disabled={disabled ? 'true' : undefined} {...attrs} {...rest}>
+  <span class="btn__spinner" aria-hidden="true"></span>
+  <span class="btn__icon btn__icon--start"><slot name="icon-start" /></span>
+  <span class="btn__label"><slot /></span>
+  <span class="btn__icon btn__icon--end"><slot name="icon-end" /></span>
+</Tag>
+
+<style is:global>
+  .btn {
+    --_h: 2.5rem; --_px: var(--space-4); --_fs: var(--text-sm);
+    position: relative; display: inline-flex; align-items: center; justify-content: center; gap: var(--space-2);
+    height: var(--_h); padding-inline: var(--_px);
+    font-family: var(--font-sans); font-size: var(--_fs); font-weight: var(--weight-medium); line-height: 1; white-space: nowrap;
+    text-decoration: none; border: 1px solid transparent; border-radius: var(--radius-md);
+    user-select: none; -webkit-tap-highlight-color: transparent;
+    transition: transform var(--duration-fast) var(--ease-spring), background-color var(--duration-fast) var(--ease-standard),
+      border-color var(--duration-fast) var(--ease-standard), box-shadow var(--duration-base) var(--ease-standard), color var(--duration-fast);
+  }
+  .btn--sm { --_h: 2rem; --_px: var(--space-3); --_fs: var(--text-xs); border-radius: var(--radius-sm); }
+  .btn--lg { --_h: 3rem; --_px: var(--space-6); --_fs: var(--text-base); border-radius: var(--radius-lg); }
+  .btn--full { display: flex; width: 100%; }
+  .btn__icon { display: inline-flex; transition: transform var(--duration-base) var(--ease-spring); }
+  .btn__icon:empty { display: none; }
+  .btn__spinner { display: none; }
+
+  /* Variants */
+  .btn--primary { background: var(--accent-solid); color: var(--accent-on-solid); }
+  .btn--primary:hover, .btn--primary.is-hover { background: var(--accent-solid-hover); transform: translateY(-1px); box-shadow: var(--shadow-md); }
+  .btn--secondary { background: var(--color-bg-surface); color: var(--color-text-primary); border-color: var(--color-border-default); }
+  .btn--secondary:hover, .btn--secondary.is-hover { border-color: var(--color-border-strong); background: var(--color-bg-subtle); transform: translateY(-1px); box-shadow: var(--shadow-sm); }
+  .btn--ghost { background: transparent; color: var(--color-text-secondary); }
+  .btn--ghost:hover, .btn--ghost.is-hover { background: var(--color-bg-subtle); color: var(--color-text-primary); }
+  .btn--danger { background: var(--danger-solid); color: var(--danger-on-solid); }
+  .btn--danger:hover, .btn--danger.is-hover { background: var(--danger-solid-hover); transform: translateY(-1px); box-shadow: var(--shadow-md); }
+
+  /* Hover: icon cuối trượt sang phải */
+  .btn:hover .btn__icon--end, .btn.is-hover .btn__icon--end { transform: translateX(3px); }
+
+  /* Focus */
+  .btn:focus-visible, .btn.is-focus { outline: 2px solid var(--accent-solid); outline-offset: 2px; border-radius: var(--radius-md); }
+  .btn--sm:focus-visible, .btn--sm.is-focus { border-radius: var(--radius-sm); }
+  .btn--lg:focus-visible, .btn--lg.is-focus { border-radius: var(--radius-lg); }
+  .btn--danger:focus-visible, .btn--danger.is-focus { outline-color: var(--danger-solid); }
+
+  /* Active (nhấn xuống) */
+  .btn:active:not(:disabled):not(.is-disabled), .btn.is-active { transform: translateY(0) scale(0.96); box-shadow: none; transition-duration: var(--duration-instant); }
+  .btn--ghost.is-active, .btn--ghost:active:not(:disabled) { background: var(--color-bg-sunken); }
+
+  /* Disabled */
+  .btn:disabled, .btn.is-disabled, .btn[aria-disabled="true"] {
+    background: var(--color-bg-sunken); color: var(--color-text-disabled); border-color: transparent; box-shadow: none; transform: none; cursor: not-allowed;
+  }
+  .btn--ghost:disabled, .btn--ghost.is-disabled { background: transparent; }
+
+  /* Loading */
+  .btn.is-loading { pointer-events: none; cursor: progress; }
+  .btn.is-loading .btn__icon--start { display: none; }
+  .btn.is-loading .btn__spinner {
+    display: inline-block; width: 1em; height: 1em; border-radius: 50%;
+    border: 2px solid currentColor; border-right-color: transparent; animation: btn-spin 700ms linear infinite;
+  }
+  .btn.is-loading:disabled { background: var(--accent-solid); color: var(--accent-on-solid); opacity: 0.75; }
+  .btn--secondary.is-loading:disabled { background: var(--color-bg-surface); color: var(--color-text-secondary); border-color: var(--color-border-default); opacity: 1; }
+  .btn--ghost.is-loading:disabled { background: transparent; color: var(--color-text-secondary); opacity: 1; }
+  .btn--danger.is-loading:disabled { background: var(--danger-solid); color: var(--danger-on-solid); }
+  @keyframes btn-spin { to { transform: rotate(360deg); } }
+</style>

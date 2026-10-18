@@ -1,0 +1,281 @@
+/* GENERATED bởi scripts/build-tokens.mjs từ tokens.json. Đừng sửa tay. */
+
+:root {
+  color-scheme: light dark;
+  --color-white: #FFFFFF;
+  --color-cream-50: #FBF8F3;
+  --color-cream-100: #F5F0E6;
+  --color-cream-200: #EAE3D3;
+  --color-cream-300: #D9D0BB;
+  --color-ink-300: #C9C3B5;
+  --color-ink-400: #A39C8D;
+  --color-ink-500: #7A7468;
+  --color-ink-600: #5F5A51;
+  --color-ink-700: #46423B;
+  --color-ink-900: #1D1B18;
+  --color-night-600: #46423A;
+  --color-night-700: #322F28;
+  --color-night-800: #25231E;
+  --color-night-900: #1B1A16;
+  --color-night-950: #14130F;
+  --color-teal-50: #E8F5F3;
+  --color-teal-100: #CBE9E4;
+  --color-teal-300: #7CCDC3;
+  --color-teal-500: #2A9D8F;
+  --color-teal-600: #1E7D72;
+  --color-teal-700: #165F57;
+  --color-violet-50: #F3EFFB;
+  --color-violet-100: #E4DAF6;
+  --color-violet-300: #BBA6EB;
+  --color-violet-500: #7C5CC4;
+  --color-violet-600: #6745B0;
+  --color-violet-700: #4F3590;
+  --color-amber-50: #FDF3E1;
+  --color-amber-100: #FAE3B8;
+  --color-amber-300: #F2C063;
+  --color-amber-500: #D98E04;
+  --color-amber-600: #A06400;
+  --color-amber-700: #7F4E00;
+  --color-rose-50: #FCEDEF;
+  --color-rose-100: #F8D3D8;
+  --color-rose-300: #F29AA8;
+  --color-rose-500: #D6455D;
+  --color-rose-600: #B52F46;
+  --color-rose-700: #8C2336;
+  --color-blue-50: #EAF1FC;
+  --color-blue-100: #D0E0F8;
+  --color-blue-300: #8DB7F0;
+  --color-blue-500: #3B7DD8;
+  --color-blue-600: #2563B8;
+  --color-blue-700: #1B4A8C;
+  --color-green-50: #EAF6EC;
+  --color-green-100: #CDE8D2;
+  --color-green-300: #86CC98;
+  --color-green-500: #3E9B55;
+  --color-green-600: #2C7A40;
+  --color-green-700: #205C30;
+  --color-bg-page: light-dark(#FBF8F3, #14130F);
+  --color-bg-surface: light-dark(#FFFFFF, #1B1A16);
+  --color-bg-subtle: light-dark(#F5F0E6, #25231E);
+  --color-bg-sunken: light-dark(#EAE3D3, #322F28);
+  --color-bg-overlay: light-dark(rgb(29 27 24 / 0.4), rgb(0 0 0 / 0.6));
+  --color-text-primary: light-dark(#1D1B18, #F5F0E6);
+  --color-text-secondary: light-dark(#46423B, #D9D0BB);
+  --color-text-muted: light-dark(#5F5A51, #A39C8D);
+  --color-text-disabled: light-dark(#A39C8D, #7A7468);
+  --color-border-subtle: light-dark(#EAE3D3, #322F28);
+  --color-border-default: light-dark(#D9D0BB, #46423A);
+  --color-border-strong: light-dark(#A39C8D, #7A7468);
+  --color-shadow-color: light-dark(rgb(60 40 20 / 0.14), rgb(0 0 0 / 0.55));
+
+  --c-teal-tint: light-dark(#E8F5F3, color-mix(in srgb, #7CCDC3 14%, transparent));
+  --c-teal-tint-strong: light-dark(#CBE9E4, color-mix(in srgb, #7CCDC3 26%, transparent));
+  --c-teal-border: light-dark(color-mix(in srgb, #2A9D8F 40%, transparent), color-mix(in srgb, #7CCDC3 42%, transparent));
+  --c-teal-solid: light-dark(#1E7D72, #7CCDC3);
+  --c-teal-solid-hover: light-dark(#165F57, color-mix(in srgb, #7CCDC3 82%, white));
+  --c-teal-on-solid: light-dark(#FFFFFF, #14130F);
+  --c-teal-text: light-dark(#165F57, #7CCDC3);
+  --c-violet-tint: light-dark(#F3EFFB, color-mix(in srgb, #BBA6EB 14%, transparent));
+  --c-violet-tint-strong: light-dark(#E4DAF6, color-mix(in srgb, #BBA6EB 26%, transparent));
+  --c-violet-border: light-dark(color-mix(in srgb, #7C5CC4 40%, transparent), color-mix(in srgb, #BBA6EB 42%, transparent));
+  --c-violet-solid: light-dark(#6745B0, #BBA6EB);
+  --c-violet-solid-hover: light-dark(#4F3590, color-mix(in srgb, #BBA6EB 82%, white));
+  --c-violet-on-solid: light-dark(#FFFFFF, #14130F);
+  --c-violet-text: light-dark(#4F3590, #BBA6EB);
+  --c-amber-tint: light-dark(#FDF3E1, color-mix(in srgb, #F2C063 14%, transparent));
+  --c-amber-tint-strong: light-dark(#FAE3B8, color-mix(in srgb, #F2C063 26%, transparent));
+  --c-amber-border: light-dark(color-mix(in srgb, #D98E04 40%, transparent), color-mix(in srgb, #F2C063 42%, transparent));
+  --c-amber-solid: light-dark(#A06400, #F2C063);
+  --c-amber-solid-hover: light-dark(#7F4E00, color-mix(in srgb, #F2C063 82%, white));
+  --c-amber-on-solid: light-dark(#FFFFFF, #14130F);
+  --c-amber-text: light-dark(#7F4E00, #F2C063);
+  --c-rose-tint: light-dark(#FCEDEF, color-mix(in srgb, #F29AA8 14%, transparent));
+  --c-rose-tint-strong: light-dark(#F8D3D8, color-mix(in srgb, #F29AA8 26%, transparent));
+  --c-rose-border: light-dark(color-mix(in srgb, #D6455D 40%, transparent), color-mix(in srgb, #F29AA8 42%, transparent));
+  --c-rose-solid: light-dark(#B52F46, #F29AA8);
+  --c-rose-solid-hover: light-dark(#8C2336, color-mix(in srgb, #F29AA8 82%, white));
+  --c-rose-on-solid: light-dark(#FFFFFF, #14130F);
+  --c-rose-text: light-dark(#8C2336, #F29AA8);
+  --c-blue-tint: light-dark(#EAF1FC, color-mix(in srgb, #8DB7F0 14%, transparent));
+  --c-blue-tint-strong: light-dark(#D0E0F8, color-mix(in srgb, #8DB7F0 26%, transparent));
+  --c-blue-border: light-dark(color-mix(in srgb, #3B7DD8 40%, transparent), color-mix(in srgb, #8DB7F0 42%, transparent));
+  --c-blue-solid: light-dark(#2563B8, #8DB7F0);
+  --c-blue-solid-hover: light-dark(#1B4A8C, color-mix(in srgb, #8DB7F0 82%, white));
+  --c-blue-on-solid: light-dark(#FFFFFF, #14130F);
+  --c-blue-text: light-dark(#1B4A8C, #8DB7F0);
+  --c-green-tint: light-dark(#EAF6EC, color-mix(in srgb, #86CC98 14%, transparent));
+  --c-green-tint-strong: light-dark(#CDE8D2, color-mix(in srgb, #86CC98 26%, transparent));
+  --c-green-border: light-dark(color-mix(in srgb, #3E9B55 40%, transparent), color-mix(in srgb, #86CC98 42%, transparent));
+  --c-green-solid: light-dark(#2C7A40, #86CC98);
+  --c-green-solid-hover: light-dark(#205C30, color-mix(in srgb, #86CC98 82%, white));
+  --c-green-on-solid: light-dark(#FFFFFF, #14130F);
+  --c-green-text: light-dark(#205C30, #86CC98);
+
+  --accent-tint: var(--c-teal-tint);
+  --accent-tint-strong: var(--c-teal-tint-strong);
+  --accent-border: var(--c-teal-border);
+  --accent-solid: var(--c-teal-solid);
+  --accent-solid-hover: var(--c-teal-solid-hover);
+  --accent-on-solid: var(--c-teal-on-solid);
+  --accent-text: var(--c-teal-text);
+
+  --success-tint: var(--c-green-tint);
+  --success-tint-strong: var(--c-green-tint-strong);
+  --success-border: var(--c-green-border);
+  --success-solid: var(--c-green-solid);
+  --success-solid-hover: var(--c-green-solid-hover);
+  --success-on-solid: var(--c-green-on-solid);
+  --success-text: var(--c-green-text);
+  --danger-tint: var(--c-rose-tint);
+  --danger-tint-strong: var(--c-rose-tint-strong);
+  --danger-border: var(--c-rose-border);
+  --danger-solid: var(--c-rose-solid);
+  --danger-solid-hover: var(--c-rose-solid-hover);
+  --danger-on-solid: var(--c-rose-on-solid);
+  --danger-text: var(--c-rose-text);
+  --warning-tint: var(--c-amber-tint);
+  --warning-tint-strong: var(--c-amber-tint-strong);
+  --warning-border: var(--c-amber-border);
+  --warning-solid: var(--c-amber-solid);
+  --warning-solid-hover: var(--c-amber-solid-hover);
+  --warning-on-solid: var(--c-amber-on-solid);
+  --warning-text: var(--c-amber-text);
+  --info-tint: var(--c-blue-tint);
+  --info-tint-strong: var(--c-blue-tint-strong);
+  --info-border: var(--c-blue-border);
+  --info-solid: var(--c-blue-solid);
+  --info-solid-hover: var(--c-blue-solid-hover);
+  --info-on-solid: var(--c-blue-on-solid);
+  --info-text: var(--c-blue-text);
+
+  --font-serif: 'Source Serif 4 Variable', Georgia, 'Times New Roman', serif;
+  --font-sans: 'Be Vietnam Pro', system-ui, -apple-system, 'Segoe UI', sans-serif;
+  --font-mono: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+  --text-xs: 0.75rem;
+  --text-sm: 0.875rem;
+  --text-base: 1rem;
+  --text-md: 1.125rem;
+  --text-lg: 1.25rem;
+  --text-xl: 1.5rem;
+  --text-2xl: clamp(1.625rem, 1.3rem + 1.2vw, 2rem);
+  --text-3xl: clamp(1.875rem, 1.4rem + 1.8vw, 2.5rem);
+  --text-4xl: clamp(2.25rem, 1.6rem + 2.6vw, 3.25rem);
+  --leading-tight: 1.2;
+  --leading-snug: 1.35;
+  --leading-normal: 1.5;
+  --leading-relaxed: 1.7;
+  --weight-regular: 400;
+  --weight-medium: 500;
+  --weight-semibold: 600;
+  --weight-bold: 700;
+  --tracking-tight: -0.015em;
+  --tracking-normal: 0;
+  --tracking-wide: 0.04em;
+  --tracking-caps: 0.08em;
+  --space-0: 0;
+  --space-1: 0.25rem;
+  --space-2: 0.5rem;
+  --space-3: 0.75rem;
+  --space-4: 1rem;
+  --space-5: 1.25rem;
+  --space-6: 1.5rem;
+  --space-8: 2rem;
+  --space-10: 2.5rem;
+  --space-12: 3rem;
+  --space-16: 4rem;
+  --space-20: 5rem;
+  --space-24: 6rem;
+  --radius-xs: 2px;
+  --radius-sm: 4px;
+  --radius-md: 8px;
+  --radius-lg: 12px;
+  --radius-xl: 16px;
+  --radius-pill: 999px;
+  --shadow-sm: 0 1px 2px var(--shadow-color);
+  --shadow-md: 0 4px 12px -2px var(--shadow-color), 0 2px 4px -2px var(--shadow-color);
+  --shadow-lg: 0 16px 32px -8px var(--shadow-color), 0 4px 8px -4px var(--shadow-color);
+  --duration-instant: 80ms;
+  --duration-fast: 140ms;
+  --duration-base: 220ms;
+  --duration-slow: 360ms;
+  --duration-slower: 560ms;
+  --ease-standard: cubic-bezier(0.2, 0, 0, 1);
+  --ease-enter: cubic-bezier(0, 0, 0, 1);
+  --ease-exit: cubic-bezier(0.3, 0, 1, 1);
+  --ease-spring: cubic-bezier(0.34, 1.56, 0.64, 1);
+  --layout-header-h: 3.5rem;
+  --layout-sidebar-w: 17rem;
+  --layout-toc-w: 14rem;
+  --layout-measure: 42.5rem;
+  --layout-container: 80rem;
+  --layout-gutter: 1rem;
+  --z-header: 50;
+  --z-overlay: 55;
+  --z-drawer: 60;
+  --z-popover: 65;
+  --z-toast: 70;
+}
+
+[data-theme="light"] { color-scheme: light; }
+
+[data-theme="dark"] { color-scheme: dark; }
+
+[data-accent="teal"] {
+  --accent-tint: var(--c-teal-tint);
+  --accent-tint-strong: var(--c-teal-tint-strong);
+  --accent-border: var(--c-teal-border);
+  --accent-solid: var(--c-teal-solid);
+  --accent-solid-hover: var(--c-teal-solid-hover);
+  --accent-on-solid: var(--c-teal-on-solid);
+  --accent-text: var(--c-teal-text);
+}
+
+[data-accent="violet"] {
+  --accent-tint: var(--c-violet-tint);
+  --accent-tint-strong: var(--c-violet-tint-strong);
+  --accent-border: var(--c-violet-border);
+  --accent-solid: var(--c-violet-solid);
+  --accent-solid-hover: var(--c-violet-solid-hover);
+  --accent-on-solid: var(--c-violet-on-solid);
+  --accent-text: var(--c-violet-text);
+}
+
+[data-accent="amber"] {
+  --accent-tint: var(--c-amber-tint);
+  --accent-tint-strong: var(--c-amber-tint-strong);
+  --accent-border: var(--c-amber-border);
+  --accent-solid: var(--c-amber-solid);
+  --accent-solid-hover: var(--c-amber-solid-hover);
+  --accent-on-solid: var(--c-amber-on-solid);
+  --accent-text: var(--c-amber-text);
+}
+
+[data-accent="rose"] {
+  --accent-tint: var(--c-rose-tint);
+  --accent-tint-strong: var(--c-rose-tint-strong);
+  --accent-border: var(--c-rose-border);
+  --accent-solid: var(--c-rose-solid);
+  --accent-solid-hover: var(--c-rose-solid-hover);
+  --accent-on-solid: var(--c-rose-on-solid);
+  --accent-text: var(--c-rose-text);
+}
+
+[data-accent="blue"] {
+  --accent-tint: var(--c-blue-tint);
+  --accent-tint-strong: var(--c-blue-tint-strong);
+  --accent-border: var(--c-blue-border);
+  --accent-solid: var(--c-blue-solid);
+  --accent-solid-hover: var(--c-blue-solid-hover);
+  --accent-on-solid: var(--c-blue-on-solid);
+  --accent-text: var(--c-blue-text);
+}
+
+[data-accent="green"] {
+  --accent-tint: var(--c-green-tint);
+  --accent-tint-strong: var(--c-green-tint-strong);
+  --accent-border: var(--c-green-border);
+  --accent-solid: var(--c-green-solid);
+  --accent-solid-hover: var(--c-green-solid-hover);
+  --accent-on-solid: var(--c-green-on-solid);
+  --accent-text: var(--c-green-text);
+}

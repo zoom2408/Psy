@@ -1,0 +1,64 @@
+---
+// Backlinks: các note đang liên kết tới trang này.
+// States: có dữ liệu, hover, focus, active, empty (có minh họa), loading (skeleton).
+import Icon from './Icon.astro';
+interface Item { title: string; href: string; course?: string; excerpt?: string }
+interface Props { items?: Item[]; loading?: boolean; title?: string; id?: string }
+const { items = [], loading = false, title = 'Được nhắc tới trong', id = 'bl-title' } = Astro.props;
+---
+<section class="bl" aria-labelledby={id} aria-busy={loading ? 'true' : undefined}>
+  <h2 class="bl__title" id={id}>{title}{!loading && items.length > 0 && <span class="bl__count">{items.length}</span>}</h2>
+  {loading ? (
+    <ul role="list" class="bl__list" aria-hidden="true">
+      {[0, 1, 2].map(() => <li class="bl__skeleton"><span></span><span></span></li>)}
+    </ul>
+  ) : items.length === 0 ? (
+    <div class="bl__empty">
+      <Icon name="link" size={20} />
+      <p>Chưa có ghi chú nào liên kết tới đây.</p>
+      <small>Dùng <code>[[tên note]]</code> trong ghi chú khác để tạo liên kết.</small>
+    </div>
+  ) : (
+    <ul role="list" class="bl__list">
+      {items.map((it, i) => (
+        <li data-reveal style={`--reveal-i:${i}`}>
+          <a class="bl__item" href={it.href}>
+            <span class="bl__head">
+              <span class="bl__name">{it.title}</span>
+              {it.course && <span class="bl__course">{it.course}</span>}
+              <Icon name="arrow-right" size={16} class="bl__go" />
+            </span>
+            {it.excerpt && <span class="bl__excerpt">{it.excerpt}</span>}
+          </a>
+        </li>
+      ))}
+    </ul>
+  )}
+</section>
+
+<style is:global>
+  .bl { max-width: var(--layout-measure); margin-top: var(--space-10); font-family: var(--font-sans); }
+  .bl__title { display: flex; align-items: center; gap: var(--space-2); margin-bottom: var(--space-3); font-size: var(--text-sm); font-weight: var(--weight-bold); letter-spacing: var(--tracking-caps); text-transform: uppercase; color: var(--color-text-muted); }
+  .bl__count { padding: 0 0.5rem; font-size: var(--text-xs); letter-spacing: 0; background: var(--accent-tint); color: var(--accent-text); border-radius: var(--radius-pill); }
+  .bl__list { display: grid; gap: var(--space-2); margin: 0; padding: 0; }
+  .bl__item { display: grid; gap: var(--space-1); padding: var(--space-3) var(--space-4); background: var(--color-bg-surface); border: 1px solid var(--color-border-subtle); border-radius: var(--radius-lg); color: inherit; text-decoration: none; transition: transform var(--duration-base) var(--ease-spring), border-color var(--duration-fast), background-color var(--duration-fast), box-shadow var(--duration-base); }
+  .bl__item:hover { transform: translateX(4px); border-color: var(--accent-solid); background: var(--accent-tint); box-shadow: var(--shadow-sm); }
+  .bl__item:active { transform: scale(0.99); }
+  .bl__item:focus-visible { outline: 2px solid var(--accent-solid); outline-offset: 2px; border-radius: var(--radius-lg); }
+  .bl__head { display: flex; align-items: center; gap: var(--space-2); }
+  .bl__name { flex: none; font-weight: var(--weight-semibold); color: var(--color-text-primary); }
+  .bl__course { flex: 1; min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; font-size: var(--text-xs); color: var(--color-text-muted); }
+  .bl__go { margin-left: auto; flex: none; color: var(--accent-text); opacity: 0; transform: translateX(-6px); transition: opacity var(--duration-fast), transform var(--duration-base) var(--ease-spring); }
+  .bl__item:hover .bl__go, .bl__item:focus-visible .bl__go { opacity: 1; transform: none; }
+  .bl__excerpt { font-family: var(--font-serif); font-size: var(--text-sm); color: var(--color-text-secondary); display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden; }
+
+  .bl__empty { display: grid; justify-items: center; gap: var(--space-1); padding: var(--space-8) var(--space-4); text-align: center; color: var(--color-text-muted); background: var(--color-bg-subtle); border: 1px dashed var(--color-border-default); border-radius: var(--radius-lg); }
+  .bl__empty svg { color: var(--color-border-strong); margin-bottom: var(--space-1); }
+  .bl__empty p { color: var(--color-text-secondary); font-weight: var(--weight-medium); }
+  .bl__empty small { font-size: var(--text-xs); }
+
+  .bl__skeleton { display: grid; gap: var(--space-2); padding: var(--space-4); border: 1px solid var(--color-border-subtle); border-radius: var(--radius-lg); }
+  .bl__skeleton span { height: 0.75rem; border-radius: var(--radius-sm); background: linear-gradient(90deg, var(--color-bg-subtle) 25%, var(--color-bg-sunken) 50%, var(--color-bg-subtle) 75%); background-size: 200% 100%; animation: shimmer 1.4s linear infinite; }
+  .bl__skeleton span:first-child { width: 40%; }
+  .bl__skeleton span:last-child { width: 85%; }
+</style>

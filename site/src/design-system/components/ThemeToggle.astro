@@ -1,0 +1,50 @@
+---
+// Chuyển giao diện: tự động (theo hệ thống) -> sáng -> tối. Lưu localStorage (có try/catch).
+// States: auto, light, dark; hover (xoay nhẹ), focus, active (nhấn), icon đổi bằng animation xoay + thu phóng.
+import Icon from './Icon.astro';
+---
+<psy-theme-toggle>
+  <button type="button" class="tt" data-mode="auto" aria-label="Giao diện: tự động. Nhấn để đổi">
+    <span class="tt__icon tt__icon--auto"><Icon name="monitor" size={18} /></span>
+    <span class="tt__icon tt__icon--light"><Icon name="sun" size={18} /></span>
+    <span class="tt__icon tt__icon--dark"><Icon name="moon" size={18} /></span>
+  </button>
+</psy-theme-toggle>
+
+<style is:global>
+  .tt { position: relative; display: grid; place-items: center; width: 2.25rem; height: 2.25rem; border-radius: var(--radius-md); color: var(--color-text-secondary); transition: background-color var(--duration-fast), color var(--duration-fast), transform var(--duration-fast) var(--ease-spring); }
+  .tt:hover { background: var(--color-bg-subtle); color: var(--color-text-primary); }
+  .tt:active { transform: scale(0.9); background: var(--color-bg-sunken); }
+  .tt:focus-visible { outline: 2px solid var(--accent-solid); outline-offset: 2px; }
+  .tt__icon { grid-area: 1 / 1; display: grid; transform: rotate(-90deg) scale(0); opacity: 0; transition: transform var(--duration-slow) var(--ease-spring), opacity var(--duration-fast); }
+  .tt:hover .tt__icon { transform-origin: center; }
+  .tt[data-mode="auto"] .tt__icon--auto, .tt[data-mode="light"] .tt__icon--light, .tt[data-mode="dark"] .tt__icon--dark { transform: none; opacity: 1; }
+  .tt[data-mode="light"]:hover .tt__icon--light { transform: rotate(45deg); }
+  .tt[data-mode="dark"]:hover .tt__icon--dark { transform: rotate(-20deg) scale(1.08); }
+</style>
+
+<script>
+  const KEY = 'psy-theme';
+  const labels = { auto: 'tự động', light: 'sáng', dark: 'tối' };
+  const order = ['auto', 'light', 'dark'];
+  const read = () => { try { const v = localStorage.getItem(KEY); return v === 'light' || v === 'dark' ? v : 'auto'; } catch { return 'auto'; } };
+  const apply = (m) => {
+    if (m === 'auto') document.documentElement.removeAttribute('data-theme');
+    else document.documentElement.setAttribute('data-theme', m);
+    try { m === 'auto' ? localStorage.removeItem(KEY) : localStorage.setItem(KEY, m); } catch {}
+  };
+  class PsyThemeToggle extends HTMLElement {
+    connectedCallback() {
+      if (this.dataset.ready) return;
+      this.dataset.ready = '1';
+      const btn = this.querySelector('button');
+      const paint = (m) => { btn.dataset.mode = m; btn.setAttribute('aria-label', `Giao diện: ${labels[m]}. Nhấn để đổi`); };
+      paint(read());
+      btn.addEventListener('click', () => {
+        const next = order[(order.indexOf(btn.dataset.mode) + 1) % order.length];
+        apply(next); paint(next);
+      });
+    }
+  }
+  if (!customElements.get('psy-theme-toggle')) customElements.define('psy-theme-toggle', PsyThemeToggle);
+</script>

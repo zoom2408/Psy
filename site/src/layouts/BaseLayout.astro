@@ -1,0 +1,51 @@
+---
+import '@fontsource-variable/source-serif-4/wght.css';
+import '@fontsource-variable/source-serif-4/wght-italic.css';
+import '@fontsource/be-vietnam-pro/400.css';
+import '@fontsource/be-vietnam-pro/500.css';
+import '@fontsource/be-vietnam-pro/600.css';
+import '@fontsource/be-vietnam-pro/700.css';
+import '../design-system/tokens/tokens.css';
+import '../design-system/styles/base.css';
+import '../design-system/styles/prose.css';
+import Header from '../design-system/components/Header.astro';
+import ReadingProgress from '../design-system/components/ReadingProgress.astro';
+
+interface Props { title: string; description?: string; accent?: 'teal' | 'violet' | 'amber' | 'rose' | 'blue' | 'green'; showMenu?: boolean; progress?: boolean }
+const { title, description, accent, showMenu = false, progress = false } = Astro.props;
+const fullTitle = title === 'Psy' ? title : `${title} | Psy`;
+---
+<!doctype html>
+<html lang="vi">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>{fullTitle}</title>
+    {description && <meta name="description" content={description} />}
+    <meta name="color-scheme" content="light dark" />
+    <link rel="icon" type="image/svg+xml" href={`${import.meta.env.BASE_URL}favicon.svg`} />
+    <script is:inline>
+      (function () {
+        var d = document.documentElement;
+        d.classList.add('js');
+        try { var t = localStorage.getItem('psy-theme'); if (t === 'light' || t === 'dark') d.setAttribute('data-theme', t); } catch (e) {}
+      })();
+    </script>
+  </head>
+  <body data-accent={accent}>
+    <a class="skip-link" href="#main">Bỏ qua tới nội dung</a>
+    {progress && <ReadingProgress />}
+    <Header showMenu={showMenu}><slot name="header-actions" slot="actions" /></Header>
+    <slot />
+    <script>
+      const els = document.querySelectorAll('[data-reveal]');
+      if (!('IntersectionObserver' in window)) els.forEach((e) => e.classList.add('is-visible'));
+      else {
+        const io = new IntersectionObserver((entries) => {
+          entries.forEach((e) => { if (e.isIntersecting) { e.target.classList.add('is-visible'); io.unobserve(e.target); } });
+        }, { rootMargin: '0px 0px -8% 0px' });
+        els.forEach((e) => io.observe(e));
+      }
+    </script>
+  </body>
+</html>

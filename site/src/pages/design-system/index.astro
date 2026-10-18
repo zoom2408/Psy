@@ -1,0 +1,623 @@
+---
+import DocLayout from '../../layouts/DocLayout.astro';
+import tokens from '../../design-system/tokens/tokens.json';
+import Specimen from '../../design-system/docs/Specimen.astro';
+import Button from '../../design-system/components/Button.astro';
+import Tag from '../../design-system/components/Tag.astro';
+import Callout from '../../design-system/components/Callout.astro';
+import Quiz from '../../design-system/components/Quiz.astro';
+import QuizSet from '../../design-system/components/QuizSet.astro';
+import ArticleCard from '../../design-system/components/ArticleCard.astro';
+import Flashcard from '../../design-system/components/Flashcard.astro';
+import CourseCard from '../../design-system/components/CourseCard.astro';
+import CourseTree from '../../design-system/components/CourseTree.astro';
+import Toc from '../../design-system/components/Toc.astro';
+import Breadcrumb from '../../design-system/components/Breadcrumb.astro';
+import PrevNext from '../../design-system/components/PrevNext.astro';
+import Backlinks from '../../design-system/components/Backlinks.astro';
+import SearchBox from '../../design-system/components/SearchBox.astro';
+import ThemeToggle from '../../design-system/components/ThemeToggle.astro';
+import Icon from '../../design-system/components/Icon.astro';
+import { resolve } from '../../design-system/tokens/resolve.mjs';
+
+const base = import.meta.env.BASE_URL.replace(/\/$/, '');
+const sections = [
+  { id: 'nguyen-tac', title: 'Nguyên tắc' },
+  { id: 'mau', title: 'Màu' },
+  { id: 'chu', title: 'Typography' },
+  { id: 'khoang-cach', title: 'Khoảng cách, bo góc, bóng' },
+  { id: 'chuyen-dong', title: 'Chuyển động' },
+  { id: 'bo-cuc', title: 'Bố cục và breakpoint' },
+  { id: 'c-button', title: 'Button' },
+  { id: 'c-tag', title: 'Tag' },
+  { id: 'c-callout', title: 'Callout' },
+  { id: 'c-quiz', title: 'Quiz' },
+  { id: 'c-flashcard', title: 'Flashcard' },
+  { id: 'c-coursecard', title: 'CourseCard' },
+  { id: 'c-tree', title: 'CourseTree' },
+  { id: 'c-toc', title: 'Toc' },
+  { id: 'c-nav', title: 'Breadcrumb và PrevNext' },
+  { id: 'c-backlinks', title: 'Backlinks' },
+  { id: 'c-search', title: 'SearchBox' },
+  { id: 'c-theme', title: 'ThemeToggle' },
+  { id: 'c-article', title: 'ArticleCard' },
+  { id: 'c-prose', title: 'Prose' }
+];
+const nav = [
+  { title: 'Nền tảng', open: true, items: sections.slice(0, 6).map((s) => ({ title: s.title, href: `#${s.id}` })) },
+  { title: 'Component', open: true, items: sections.slice(6).map((s) => ({ title: s.title, href: `#${s.id}` })) }
+];
+const headings = sections.map((s) => ({ depth: 2, slug: s.id, text: s.title }));
+
+const palette = ['cream', 'ink', 'night', 'teal', 'violet', 'amber', 'rose', 'blue', 'green'];
+const semantic = Object.keys(tokens.semantic);
+const accents = tokens.accents.list;
+const statuses = Object.entries(tokens.accents.status);
+const textSizes = Object.entries(tokens.text);
+const spaces = Object.entries(tokens.space).filter(([k]) => k !== '0');
+const radii = Object.entries(tokens.radius);
+const shadows = Object.keys(tokens.shadow);
+const durations = Object.entries(tokens.duration);
+const eases = Object.entries(tokens.ease);
+const states = ['default', 'hover', 'focus', 'active', 'disabled', 'loading'];
+const forced = { default: '', hover: 'is-hover', focus: 'is-focus', active: 'is-active', disabled: '', loading: '' };
+
+const quizOpts = [
+  { text: 'Ego, Id, Persona' },
+  { text: 'Id, Ego, Superego', correct: true },
+  { text: 'Self, Shadow, Anima' }
+];
+const q1 = { question: 'Cấu trúc nhân cách ba ngôi của Freud gồm những thành phần nào?', options: quizOpts, explanation: 'Freud chia nhân cách thành Id (bản năng), Ego (thực tại) và Superego (đạo đức).' };
+
+const tree = [
+  { title: 'Phần 1. Nhập môn', items: [{ title: 'Bài 1. Giới thiệu', href: '#a', done: true }, { title: 'Bài 2. Freud và Phân tâm học', href: '#b', current: true }, { title: 'Bài 3. Adler', href: '#c' }] },
+  { title: 'Phần 2. Nhân văn', items: [{ title: 'Bài 4. Maslow', href: '#d' }, { title: 'Bài 5. Rogers', href: '#e' }] }
+];
+const tocHeads = [
+  { depth: 2, slug: 'x1', text: 'Cấu trúc ba ngôi' }, { depth: 3, slug: 'x2', text: 'Id' }, { depth: 3, slug: 'x3', text: 'Ego' },
+  { depth: 2, slug: 'x4', text: 'Cơ chế phòng vệ' }, { depth: 2, slug: 'x5', text: 'Các giai đoạn tâm tính dục' }
+];
+const sampleResults = [
+  { title: 'Cơ chế phòng vệ', href: '#', course: 'Nhân cách', excerpt: 'Chiến lược vô thức giúp Ego giảm lo âu.' },
+  { title: 'Cơ chế bù trừ', href: '#', course: 'Nhân cách', excerpt: 'Adler: nỗ lực vượt qua mặc cảm tự ti.' },
+  { title: 'Trí nhớ làm việc', href: '#', course: 'Nhận thức' }
+];
+const backItems = [
+  { title: 'Cơ chế phòng vệ', href: '#', course: 'Nhân cách · Bài 2', excerpt: 'Đè nén là cơ chế nền tảng, được Freud mô tả trong cấu trúc Ego.' },
+  { title: 'Lo âu', href: '#', course: 'Tâm bệnh học · Bài 5' }
+];
+const hex = (v: string) => resolve(tokens, v);
+---
+<DocLayout title="Design system" description="Token, component và trạng thái của Psy." progress>
+  <CourseTree slot="nav" groups={nav} label="Design system" currentPath="" />
+  <Toc slot="toc" headings={headings} />
+
+  <article class="ds">
+    <header class="ds__hero">
+      <Breadcrumb items={[{ label: 'Psy', href: `${base}/` }, { label: 'Design system' }]} />
+      <h1>Design system</h1>
+      <p class="ds__lead">Token chuẩn và component cho Psy. Giao diện đọc theo phong cách <strong>A (editorial)</strong>, phần điều khiển và tương tác theo phong cách <strong>B (soft modern)</strong>. Mọi component đều có đủ trạng thái, bấm thử trực tiếp trên trang này.</p>
+      <p class="ds__meta">
+        <Tag variant="accent">Token: tokens.json</Tag>
+        <Tag>Dark mode: light-dark()</Tag>
+        <Tag>Giảm chuyển động: có</Tag>
+        <Tag>Bàn phím: đầy đủ</Tag>
+      </p>
+    </header>
+
+    <!-- 1. Nguyên tắc -->
+    <section class="ds__sec" id="nguyen-tac">
+      <h2>Nguyên tắc</h2>
+      <div class="ds__cols">
+        <div class="ds__card" data-reveal>
+          <h3>A. Bề mặt đọc</h3>
+          <ul>
+            <li>Chữ serif, cột 680px, dòng cao 1.7</li>
+            <li>Nền kem, đường kẻ mảnh, bo góc nhỏ</li>
+            <li>Ít bóng, ít màu, nội dung là trung tâm</li>
+          </ul>
+        </div>
+        <div class="ds__card" data-reveal style="--reveal-i:1">
+          <h3>B. Bề mặt tương tác</h3>
+          <ul>
+            <li>Chữ sans, bo góc lớn, bóng mềm</li>
+            <li>Mỗi môn một màu nhấn (<code>data-accent</code>)</li>
+            <li>Phản hồi tức thì: nhấn, lật, đúng/sai, tiến độ</li>
+          </ul>
+        </div>
+        <div class="ds__card" data-reveal style="--reveal-i:2">
+          <h3>Chuyển động</h3>
+          <ul>
+            <li>Ngắn (140 đến 360ms), có mục đích</li>
+            <li>Nhấn xuống thu nhỏ, thả ra bật lại</li>
+            <li>Tôn trọng <code>prefers-reduced-motion</code></li>
+          </ul>
+        </div>
+      </div>
+    </section>
+
+    <!-- 2. Màu -->
+    <section class="ds__sec" id="mau">
+      <h2>Màu</h2>
+      <h3>Primitive</h3>
+      <p class="ds__hint">Bấm vào ô màu để chép tên biến CSS.</p>
+      {palette.map((name) => {
+        const val = tokens.color[name];
+        return (
+          <div class="ds__ramp">
+            <span class="ds__ramp-name">{name}</span>
+            <div class="ds__swatches">
+              {Object.entries(val).map(([step, color]) => (
+                <button type="button" class="sw" data-copy={`var(--color-${name}-${step})`} style={`--sw:${color}`}>
+                  <span class="sw__chip"></span><span class="sw__step">{step}</span><span class="sw__hex">{color}</span>
+                  <span class="sw__done"><Icon name="check" size={14} /> Đã chép</span>
+                </button>
+              ))}
+            </div>
+          </div>
+        );
+      })}
+
+      <h3>Semantic (sáng / tối)</h3>
+      <p class="ds__hint">Dùng các token này trong component. Mỗi token là một cặp sáng/tối, đổi tự động theo giao diện.</p>
+      <div class="ds__table-wrap">
+        <table class="ds__table">
+          <thead><tr><th>Token</th><th>Sáng</th><th>Tối</th></tr></thead>
+          <tbody>
+            {semantic.map((name) => (
+              <tr>
+                <td><code>--color-{name}</code></td>
+                {['light', 'dark'].map((th) => (
+                  <td>
+                    <span class="tk" data-theme={th}>
+                      {name.startsWith('text-') ? <span class="tk__text" style={`color:var(--color-${name})`}>Aa tâm lý</span>
+                        : name.startsWith('border-') ? <span class="tk__box" style={`border:2px solid var(--color-${name})`}></span>
+                        : <span class="tk__box" style={`background:var(--color-${name})`}></span>}
+                      <small>{hex(tokens.semantic[name][th === 'light' ? 0 : 1])}</small>
+                    </span>
+                  </td>
+                ))}
+              </tr>
+            ))}
+          </tbody>
+        </table>
+      </div>
+
+      <h3>Màu nhấn theo môn</h3>
+      <p class="ds__hint">Đặt <code>data-accent="violet"</code> lên một phần tử, mọi component bên trong đổi theo. Mặc định: <strong>{tokens.accents.default}</strong>.</p>
+      <div class="ds__accents">
+        {accents.map((a) => (
+          <div class="acc" data-accent={a}>
+            <span class="acc__name">{a}</span>
+            <div class="acc__row" data-theme="light">
+              <span style="background:var(--accent-tint)">tint</span><span style="background:var(--accent-tint-strong)">strong</span>
+              <span style="background:var(--accent-solid);color:var(--accent-on-solid)">solid</span><span style="color:var(--accent-text);background:var(--accent-tint)">text</span>
+            </div>
+            <div class="acc__row" data-theme="dark">
+              <span style="background:var(--accent-tint)">tint</span><span style="background:var(--accent-tint-strong)">strong</span>
+              <span style="background:var(--accent-solid);color:var(--accent-on-solid)">solid</span><span style="color:var(--accent-text);background:var(--accent-tint)">text</span>
+            </div>
+          </div>
+        ))}
+      </div>
+
+      <h3>Trạng thái phản hồi</h3>
+      <div class="ds__status">
+        {statuses.map(([name, ramp]) => (
+          <div class="st" style={`--_t:var(--${name}-tint);--_b:var(--${name}-border);--_x:var(--${name}-text);--_s:var(--${name}-solid)`}>
+            <span class="st__dot"></span><strong>{name}</strong><small>dùng ramp {ramp}</small>
+          </div>
+        ))}
+      </div>
+    </section>
+
+    <!-- 3. Typography -->
+    <section class="ds__sec" id="chu">
+      <h2>Typography</h2>
+      <div class="ds__cols ds__cols--2">
+        <div class="ds__card">
+          <p class="ds__label">Serif · nội dung đọc, tiêu đề</p>
+          <p class="ds__font" style="font-family:var(--font-serif)">Source Serif 4</p>
+          <p style="font-family:var(--font-serif);font-size:var(--text-md);line-height:var(--leading-relaxed)">Tâm lý học nghiên cứu hành vi và các quá trình tinh thần. Ăn quả nhớ kẻ trồng cây, ơi ờ ở ử ữ.</p>
+        </div>
+        <div class="ds__card">
+          <p class="ds__label">Sans · giao diện, nhãn, nút</p>
+          <p class="ds__font" style="font-family:var(--font-sans)">Be Vietnam Pro</p>
+          <p style="font-family:var(--font-sans);font-size:var(--text-base);line-height:var(--leading-normal)">Tâm lý học nghiên cứu hành vi và các quá trình tinh thần. Ăn quả nhớ kẻ trồng cây, ơi ờ ở ử ữ.</p>
+        </div>
+      </div>
+      <div class="ds__table-wrap">
+        <table class="ds__table">
+          <thead><tr><th>Token</th><th>Giá trị</th><th>Mẫu</th></tr></thead>
+          <tbody>
+            {textSizes.map(([k, v]) => (
+              <tr><td><code>--text-{k}</code></td><td><small>{v}</small></td><td><span style={`font-family:var(--font-serif);font-size:var(--text-${k});line-height:1.2;font-weight:600`}>Tâm lý học nhận thức</span></td></tr>
+            ))}
+          </tbody>
+        </table>
+      </div>
+      <p class="ds__hint">Line-height: tight {tokens.leading.tight}, snug {tokens.leading.snug}, normal {tokens.leading.normal}, relaxed {tokens.leading.relaxed} (nội dung đọc). Weight: 400, 500, 600, 700.</p>
+    </section>
+
+    <!-- 4. Spacing / radius / shadow -->
+    <section class="ds__sec" id="khoang-cach">
+      <h2>Khoảng cách, bo góc, bóng</h2>
+      <h3>Spacing (lưới 4px)</h3>
+      <div class="ds__space">
+        {spaces.map(([k, v]) => (
+          <div class="sp"><code>--space-{k}</code><span class="sp__bar" style={`width:var(--space-${k})`}></span><small>{v}</small></div>
+        ))}
+      </div>
+      <h3>Radius</h3>
+      <div class="ds__row">
+        {radii.map(([k, v]) => (<div class="rd"><span style={`border-radius:var(--radius-${k})`}></span><code>{k}</code><small>{v}</small></div>))}
+      </div>
+      <h3>Shadow</h3>
+      <div class="ds__row ds__row--shadow">
+        {shadows.map((k) => (<div class="sh"><span style={`box-shadow:var(--shadow-${k})`}></span><code>{k}</code></div>))}
+      </div>
+    </section>
+
+    <!-- 5. Motion -->
+    <section class="ds__sec" id="chuyen-dong">
+      <h2>Chuyển động</h2>
+      <p class="ds__hint">Bấm "Phát" để xem từng thời lượng và đường cong.</p>
+      <div class="ds__cols ds__cols--2">
+        <div class="ds__card">
+          <h3>Duration</h3>
+          {durations.map(([k, v]) => (
+            <div class="mo">
+              <code>{k} · {v}</code>
+              <div class="mo__track"><span class="mo__dot" style={`--d:var(--duration-${k});--e:var(--ease-standard)`}></span></div>
+              <Button size="sm" variant="ghost" data-play>Phát</Button>
+            </div>
+          ))}
+        </div>
+        <div class="ds__card">
+          <h3>Easing</h3>
+          {eases.map(([k, v]) => (
+            <div class="mo">
+              <code>{k}</code>
+              <div class="mo__track"><span class="mo__dot" style={`--d:var(--duration-slower);--e:var(--ease-${k})`}></span></div>
+              <Button size="sm" variant="ghost" data-play>Phát</Button>
+            </div>
+          ))}
+          <p class="ds__hint"><code>spring</code> vượt nhẹ rồi về chỗ, dùng cho nhấn/thả và hiện icon.</p>
+        </div>
+      </div>
+    </section>
+
+    <!-- 6. Layout -->
+    <section class="ds__sec" id="bo-cuc">
+      <h2>Bố cục và breakpoint</h2>
+      <div class="ds__cols ds__cols--2">
+        <div class="ds__table-wrap"><table class="ds__table"><thead><tr><th>Layout</th><th>Giá trị</th></tr></thead><tbody>
+          {Object.entries(tokens.layout).map(([k, v]) => (<tr><td><code>--layout-{k}</code></td><td>{v}</td></tr>))}
+        </tbody></table></div>
+        <div class="ds__table-wrap"><table class="ds__table"><thead><tr><th>Breakpoint</th><th>Hành vi</th></tr></thead><tbody>
+          <tr><td><code>sm · {tokens.breakpoint.sm}</code></td><td>Bố cục 1 cột, ẩn tên logo</td></tr>
+          <tr><td><code>md · {tokens.breakpoint.md}</code></td><td>Cỡ chữ đọc 18px</td></tr>
+          <tr><td><code>lg · {tokens.breakpoint.lg}</code></td><td>Sidebar cố định, hết drawer</td></tr>
+          <tr><td><code>xl · {tokens.breakpoint.xl}</code></td><td>Thêm cột mục lục bên phải</td></tr>
+        </tbody></table></div>
+      </div>
+      <p class="ds__hint">Biến CSS không dùng được trong <code>@media</code>, nên breakpoint được ghi trong token để làm tài liệu và viết literal trong CSS.</p>
+    </section>
+
+    <!-- Components -->
+    <section class="ds__sec" id="c-button">
+      <h2>Button</h2>
+      <p class="ds__hint">Biến thể × trạng thái. Hover/focus/active được ép hiển thị để so sánh. Thử thật bằng chuột và Tab.</p>
+      {(['primary', 'secondary', 'ghost', 'danger'] as const).map((v) => (
+        <Specimen label={v} wide>
+          {states.map((s) => (
+            <div class="cell">
+              <Button variant={v} class={forced[s]} disabled={s === 'disabled'} loading={s === 'loading'}>
+                {s === 'loading' ? 'Đang lưu' : 'Lưu lại'}
+              </Button>
+              <small>{s}</small>
+            </div>
+          ))}
+        </Specimen>
+      ))}
+      <div class="ds__cols ds__cols--2">
+        <Specimen label="Kích thước">
+          <Button size="sm">Nhỏ</Button><Button size="md">Vừa</Button><Button size="lg">Lớn</Button>
+        </Specimen>
+        <Specimen label="Có icon" note="icon cuối trượt khi hover">
+          <Button><Icon slot="icon-start" name="check" size={16} />Hoàn thành</Button>
+          <Button variant="secondary" href="#c-tag">Xem tiếp<Icon slot="icon-end" name="arrow-right" size={16} /></Button>
+        </Specimen>
+      </div>
+    </section>
+
+    <section class="ds__sec" id="c-tag">
+      <h2>Tag</h2>
+      <Specimen label="Biến thể" wide>
+        <Tag>Neutral</Tag><Tag variant="accent">Accent</Tag><Tag variant="success">Success</Tag><Tag variant="danger">Danger</Tag><Tag variant="warning">Warning</Tag><Tag variant="info">Info</Tag>
+      </Specimen>
+      <Specimen label="Trạng thái (loại có thể bấm)" wide>
+        <div class="cell"><Tag variant="accent" interactive>default</Tag><small>default</small></div>
+        <div class="cell"><Tag variant="accent" interactive class="is-hover">hover</Tag><small>hover</small></div>
+        <div class="cell"><Tag variant="accent" interactive class="is-focus">focus</Tag><small>focus</small></div>
+        <div class="cell"><Tag variant="accent" interactive class="is-active">active</Tag><small>active</small></div>
+        <div class="cell"><Tag variant="accent" interactive selected>selected</Tag><small>selected</small></div>
+        <div class="cell"><Tag variant="accent" interactive disabled>disabled</Tag><small>disabled</small></div>
+      </Specimen>
+      <Specimen label="Bộ lọc dùng thử" note="bấm để chọn" wide>
+        <Tag interactive>Nhận thức</Tag><Tag interactive selected>Nhân cách</Tag><Tag interactive>Thống kê</Tag><Tag interactive>Tâm bệnh học</Tag>
+      </Specimen>
+    </section>
+
+    <section class="ds__sec" id="c-callout">
+      <h2>Callout</h2>
+      <p class="ds__hint">Map với callout Obsidian: <code>&gt; [!definition]</code>, <code>[!example]</code>, <code>[!experiment]</code>, <code>[!case]</code>, <code>[!note]</code>.</p>
+      <Specimen wide>
+        <div class="stack">
+          <Callout type="definition" title="Cơ chế phòng vệ">Chiến lược vô thức giúp Ego giảm lo âu khi xung đột giữa Id và Superego.</Callout>
+          <Callout type="example" title="Đè nén">Một người quên cuộc hẹn với nha sĩ vì bản thân rất sợ đau.</Callout>
+          <Callout type="experiment" title="Bé Albert (Watson, 1920)">Gắn tiếng động lớn với con chuột trắng để tạo nỗi sợ có điều kiện.</Callout>
+          <Callout type="case" title="Ca lâm sàng 1">Bé T (5 tuổi) khó giao tiếp bằng mắt, hay lặp lại hành vi.</Callout>
+          <Callout type="note">Callout không có tiêu đề vẫn hiển thị nhãn loại.</Callout>
+          <Callout type="experiment" title="Thu gọn được (đang mở)" collapsible open>Bấm tiêu đề để thu gọn. Mũi tên xoay, nội dung trượt vào.</Callout>
+          <Callout type="definition" title="Thu gọn được (đang đóng)" collapsible open={false}>Nội dung chỉ hiện khi mở.</Callout>
+        </div>
+      </Specimen>
+    </section>
+
+    <section class="ds__sec" id="c-quiz">
+      <h2>Quiz</h2>
+      <p class="ds__hint">Trạng thái tĩnh bên dưới. Bộ thử thật ở cuối mục: chọn, kiểm tra, xem hiệu ứng đúng/sai và điểm tổng.</p>
+      <div class="ds__cols ds__cols--2">
+        <Specimen label="idle"><Quiz {...q1} state="idle" /></Specimen>
+        <Specimen label="selected"><Quiz {...q1} state="selected" /></Specimen>
+        <Specimen label="correct"><Quiz {...q1} state="correct" /></Specimen>
+        <Specimen label="wrong"><Quiz {...q1} state="wrong" picked={0} /></Specimen>
+      </div>
+      <QuizSet title="Thử ngay: ba câu hỏi">
+        <Quiz number={1} {...q1} />
+        <Quiz number={2} question="Điều kiện hóa cổ điển gắn liền với nhà nghiên cứu nào?" options={[{ text: 'Skinner' }, { text: 'Pavlov', correct: true }, { text: 'Bandura' }]} explanation="Pavlov phát hiện phản xạ có điều kiện khi nghiên cứu tiết nước bọt ở chó." />
+        <Quiz number={3} question="Trong thang bậc nhu cầu của Maslow, nhu cầu nào nằm ở đáy?" options={[{ text: 'Thể chất (sinh lý)', correct: true }, { text: 'Tự thể hiện' }, { text: 'Được tôn trọng' }]} explanation="Nhu cầu sinh lý là nền tảng, cần được thỏa mãn trước các nhu cầu bậc cao hơn." />
+      </QuizSet>
+    </section>
+
+    <section class="ds__sec" id="c-flashcard">
+      <h2>Flashcard</h2>
+      <p class="ds__hint">Bấm hoặc Enter/Space để lật. Nút sao đánh dấu thẻ cần ôn.</p>
+      <div class="ds__cols">
+        <Specimen label="front"><Flashcard>Ba thành phần nhân cách theo Freud là gì?<div slot="back">Id, Ego, Superego</div></Flashcard></Specimen>
+        <Specimen label="flipped"><Flashcard flipped>Thuyết nào đề xuất tám giai đoạn phát triển tâm lý xã hội?<div slot="back">Erik Erikson</div></Flashcard></Specimen>
+        <Specimen label="marked"><Flashcard marked>Nhu cầu nằm ở đáy thang Maslow?<div slot="back">Nhu cầu sinh lý</div></Flashcard></Specimen>
+      </div>
+    </section>
+
+    <section class="ds__sec" id="c-coursecard">
+      <h2>CourseCard</h2>
+      <div class="ds__cols">
+        <Specimen label="default"><CourseCard title="Tâm lý học nhân cách" code="PSY-NC" href="#" accent="violet" year={3} lessons={9} description="Freud, Adler, Jung, Erikson, Maslow, Rogers và các thuyết học tập." /></Specimen>
+        <Specimen label="có tiến độ"><CourseCard title="Thống kê ứng dụng" code="PSY-TK" href="#" accent="blue" year={2} lessons={6} progress={60} description="Từ thống kê mô tả đến hồi quy, thực hành Jamovi." /></Specimen>
+        <Specimen label="hover (ép)" note="xem khi rê chuột thật"><CourseCard title="Tâm lý học nhận thức" code="PSY-NT" href="#" accent="teal" year={2} lessons={7} description="Tri giác, chú ý, trí nhớ, giải quyết vấn đề." /></Specimen>
+        <Specimen label="sắp có"><CourseCard title="Tâm lý học xã hội" code="PSY-XH" accent="amber" soon description="Đang biên soạn." /></Specimen>
+        <Specimen label="loading"><CourseCard loading /></Specimen>
+        <Specimen label="accent" note="6 màu nhấn">
+          <div class="chips">{accents.map((a) => (<span class="chip" data-accent={a}><i></i>{a}</span>))}</div>
+        </Specimen>
+      </div>
+    </section>
+
+    <section class="ds__sec" id="c-tree">
+      <h2>CourseTree</h2>
+      <div class="ds__cols ds__cols--2">
+        <Specimen label="có dữ liệu" note="bấm nhóm để thu gọn"><div class="w16"><CourseTree groups={tree} currentPath="" label="Mẫu" /></div></Specimen>
+        <Specimen label="empty"><div class="w16"><CourseTree groups={[]} label="Mẫu rỗng" /></div></Specimen>
+      </div>
+    </section>
+
+    <section class="ds__sec" id="c-toc">
+      <h2>Toc</h2>
+      <p class="ds__hint">Thanh nhấn trượt theo mục đang đọc. Trên trang này, cột phải (màn hình rộng) là Toc thật.</p>
+      <div class="ds__cols ds__cols--2">
+        <Specimen label="có mục"><div class="w16"><Toc headings={tocHeads} activeSlug="x4" /></div></Specimen>
+        <Specimen label="empty"><div class="w16"><Toc headings={[]} showEmpty /></div></Specimen>
+      </div>
+    </section>
+
+    <section class="ds__sec" id="c-nav">
+      <h2>Breadcrumb và PrevNext</h2>
+      <Specimen label="Breadcrumb" wide><Breadcrumb items={[{ label: 'Psy', href: '#' }, { label: 'Tâm lý học nhân cách', href: '#' }, { label: 'Bài 2. Freud' }]} /></Specimen>
+      <Specimen label="PrevNext · đủ hai phía" wide><div class="w-full"><PrevNext prev={{ title: 'Giới thiệu', href: '#' }} next={{ title: 'Alfred Adler', href: '#' }} /></div></Specimen>
+      <div class="ds__cols ds__cols--2">
+        <Specimen label="chỉ có bài sau (bài đầu)"><div class="w-full"><PrevNext next={{ title: 'Giới thiệu', href: '#' }} /></div></Specimen>
+        <Specimen label="chỉ có bài trước (bài cuối)"><div class="w-full"><PrevNext prev={{ title: 'Hiện sinh', href: '#' }} /></div></Specimen>
+      </div>
+    </section>
+
+    <section class="ds__sec" id="c-backlinks">
+      <h2>Backlinks</h2>
+      <div class="ds__cols">
+        <Specimen label="có dữ liệu"><div class="w-full"><Backlinks id="bl-a" items={backItems} /></div></Specimen>
+        <Specimen label="empty"><div class="w-full"><Backlinks id="bl-b" /></div></Specimen>
+        <Specimen label="loading"><div class="w-full"><Backlinks id="bl-c" loading /></div></Specimen>
+      </div>
+    </section>
+
+    <section class="ds__sec" id="c-search">
+      <h2>SearchBox</h2>
+      <p class="ds__hint">Bấm <kbd>/</kbd> hoặc <kbd>Ctrl/Cmd</kbd>+<kbd>K</kbd> để focus. Gõ "phòng vệ" thử kết quả, "zzz" thử rỗng, "lỗi" thử trạng thái lỗi. Dữ liệu trên trang này là giả lập.</p>
+      <Specimen label="Dùng thử" wide tall><SearchBox id="sb-live" /></Specimen>
+      <div class="ds__cols ds__cols--2">
+        <Specimen label="idle"><SearchBox id="sb-idle" /></Specimen>
+        <Specimen label="focus (ép)"><SearchBox id="sb-focus" focused value="" /></Specimen>
+        <Specimen label="results" tall><SearchBox id="sb-res" value="phòng" state="results" results={sampleResults} forceOpen /></Specimen>
+        <Specimen label="loading" tall><SearchBox id="sb-load" value="phòng" state="loading" forceOpen /></Specimen>
+        <Specimen label="empty" tall><SearchBox id="sb-empty" value="zzz" state="empty" forceOpen /></Specimen>
+        <Specimen label="error" tall><SearchBox id="sb-err" value="lỗi" state="error" forceOpen /></Specimen>
+      </div>
+    </section>
+
+    <section class="ds__sec" id="c-theme">
+      <h2>ThemeToggle</h2>
+      <Specimen label="Tự động → Sáng → Tối" note="nút cũng có ở header"><ThemeToggle /></Specimen>
+    </section>
+
+    <section class="ds__sec" id="c-article">
+      <h2>ArticleCard</h2>
+      <p class="ds__hint">Thẻ bài viết kiểu Medium. Rê chuột để thấy tiêu đề đổi màu, bìa nghiêng, mũi tên trượt.</p>
+      <Specimen label="row · mặc định" wide><div class="w-full"><ArticleCard href="#" title="Mô hình nhận thức của cơn hoảng loạn" excerpt="Theo mô hình của Clark, cơn hoảng loạn là vòng xoáy giữa cảm giác cơ thể và cách diễn giải mang tính thảm họa về cảm giác đó." date="18 tháng 10, 2026" minutes={3} tags={['Rối loạn lo âu', 'Mô hình nhận thức']} courseTitle="Tâm bệnh học" seed={1} /></div></Specimen>
+      <Specimen label="row · bản nháp" wide><div class="w-full"><ArticleCard href="#" title="Bộ ba nhận thức của Beck trong trầm cảm" excerpt="Cách người trầm cảm nhìn bản thân, thế giới và tương lai." date="18 tháng 10, 2026" minutes={2} tags={['Trầm cảm']} courseTitle="Tâm bệnh học" draft seed={2} /></div></Specimen>
+      <div class="ds__cols ds__cols--2">
+        <Specimen label="featured"><div class="w-full"><ArticleCard variant="featured" href="#" title="Mô hình dễ tổn thương và stress" excerpt="Vì sao cùng một mức áp lực, mỗi người lại đi đến một kết cục khác nhau." date="18 tháng 10, 2026" minutes={2} tags={['Phổ loạn thần']} courseTitle="Tâm bệnh học" seed={0} /></div></Specimen>
+        <Specimen label="mặc định, thu nhỏ"><div class="w-full"><ArticleCard href="#" title="Trạng thái hover" excerpt="Thẻ hiển thị khi có con trỏ ở trên." date="18 tháng 10, 2026" minutes={1} seed={3} /></div></Specimen>
+      </div>
+    </section>
+
+    <section class="ds__sec" id="c-prose">
+      <h2>Prose</h2>
+      <p class="ds__hint">Kiểu chữ cho nội dung markdown (phong cách A). Rê chuột lên tiêu đề để thấy neo.</p>
+      <div class="prose ds__prose">
+        <h2 id="mau-prose"><a class="anchor" href="#mau-prose" aria-label="Liên kết tới mục này">#</a>Cấu trúc nhân cách ba ngôi</h2>
+        <p>Freud cho rằng nhân cách gồm ba thành phần luôn <em>tương tác</em> với nhau: <a class="wikilink" href="#">Id</a>, <a class="wikilink" href="#">Ego</a> và <a class="wikilink" href="#">Superego</a>. Liên kết wiki có gạch chấm; liên kết thường <a href="#">gạch chân liền</a>; liên kết tới <a class="wikilink is-missing" href="#" title="Chưa có note này">note chưa tồn tại</a> hiển thị đỏ nét đứt.</p>
+        <h3 id="id-prose"><a class="anchor" href="#id-prose" aria-label="Liên kết tới mục này">#</a>Id</h3>
+        <ul><li>Hoạt động theo <strong>nguyên tắc khoái lạc</strong></li><li>Hoàn toàn vô thức</li><li>Có từ khi sinh ra</li></ul>
+        <blockquote>Tâm lý học có một quá khứ dài, nhưng chỉ có một lịch sử ngắn. <br />Hermann Ebbinghaus</blockquote>
+        <p>Công thức tính điểm: <code>z = (x − μ) / σ</code>. Dùng <mark>đánh dấu</mark> để nhấn mạnh và <kbd>Ctrl</kbd>+<kbd>K</kbd> để tìm kiếm.</p>
+        <div class="table-wrap"><table><thead><tr><th>Giai đoạn</th><th>Vùng cơ thể</th><th>Xung đột</th></tr></thead><tbody>
+          <tr><td>Miệng</td><td>Miệng</td><td>Cai sữa</td></tr><tr><td>Hậu môn</td><td>Hậu môn</td><td>Tập đi vệ sinh</td></tr><tr><td>Dương vật</td><td>Cơ quan sinh dục</td><td>Phức cảm Oedipus</td></tr>
+        </tbody></table></div>
+        <hr />
+        <p>Hết phần mẫu.</p>
+      </div>
+    </section>
+  </article>
+</DocLayout>
+
+<style is:global>
+  .ds { max-width: 56rem; }
+  .ds__hero { margin-bottom: var(--space-10); }
+  .ds__hero h1 { margin: var(--space-4) 0 var(--space-3); font-family: var(--font-serif); font-size: var(--text-4xl); line-height: var(--leading-tight); letter-spacing: var(--tracking-tight); }
+  .ds__lead { max-width: var(--layout-measure); font-family: var(--font-serif); font-size: var(--text-md); line-height: var(--leading-relaxed); color: var(--color-text-secondary); }
+  .ds__meta { display: flex; flex-wrap: wrap; gap: var(--space-2); margin-top: var(--space-4); }
+  .ds__sec { margin-top: var(--space-16); }
+  .ds__sec > h2 { margin-bottom: var(--space-4); padding-top: var(--space-4); border-top: 1px solid var(--color-border-default); font-family: var(--font-serif); font-size: var(--text-2xl); letter-spacing: var(--tracking-tight); }
+  .ds__sec > h3 { margin: var(--space-8) 0 var(--space-3); font-size: var(--text-lg); font-weight: var(--weight-semibold); }
+  .ds__hint { max-width: var(--layout-measure); margin-bottom: var(--space-4); font-size: var(--text-sm); color: var(--color-text-muted); }
+  .ds__hint code, .ds code { font-family: var(--font-mono); font-size: 0.85em; padding: 0.1em 0.35em; background: var(--color-bg-subtle); border-radius: var(--radius-sm); }
+  .ds kbd { font-family: var(--font-mono); font-size: 0.8em; padding: 0.05em 0.4em; border: 1px solid var(--color-border-default); border-bottom-width: 2px; border-radius: var(--radius-sm); background: var(--color-bg-surface); }
+  .ds__sec > .spec, .ds__sec > .ds__cols { margin-bottom: var(--space-5); }
+
+  .ds__cols { display: grid; gap: var(--space-4); grid-template-columns: repeat(auto-fit, minmax(14rem, 1fr)); align-items: start; }
+  .ds__cols--2 { grid-template-columns: repeat(auto-fit, minmax(min(100%, 22rem), 1fr)); }
+  .ds__card { padding: var(--space-5); background: var(--color-bg-surface); border: 1px solid var(--color-border-default); border-radius: var(--radius-lg); }
+  .ds__card h3 { margin-bottom: var(--space-2); font-size: var(--text-base); font-weight: var(--weight-semibold); }
+  .ds__card ul { padding-left: var(--space-5); font-size: var(--text-sm); color: var(--color-text-secondary); display: grid; gap: var(--space-1); }
+  .ds__label { margin-bottom: var(--space-1); font-size: var(--text-xs); font-weight: var(--weight-bold); letter-spacing: var(--tracking-caps); text-transform: uppercase; color: var(--color-text-muted); }
+  .ds__font { margin-bottom: var(--space-2); font-size: var(--text-2xl); font-weight: var(--weight-semibold); }
+
+  /* bảng */
+  .ds__table-wrap { overflow-x: auto; border: 1px solid var(--color-border-default); border-radius: var(--radius-lg); background: var(--color-bg-surface); margin-bottom: var(--space-4); }
+  .ds__table { width: 100%; border-collapse: collapse; font-size: var(--text-sm); }
+  .ds__table th { text-align: left; padding: var(--space-3) var(--space-4); font-size: var(--text-xs); letter-spacing: var(--tracking-caps); text-transform: uppercase; color: var(--color-text-muted); background: var(--color-bg-subtle); }
+  .ds__table td { padding: var(--space-2) var(--space-4); border-top: 1px solid var(--color-border-subtle); vertical-align: middle; }
+  .ds__table small { color: var(--color-text-muted); font-family: var(--font-mono); }
+
+  /* màu */
+  .ds__ramp { display: grid; grid-template-columns: 5rem 1fr; gap: var(--space-3); align-items: center; margin-bottom: var(--space-2); }
+  .ds__ramp-name { font-size: var(--text-sm); font-weight: var(--weight-semibold); }
+  .ds__swatches { display: flex; flex-wrap: wrap; gap: var(--space-2); }
+  .sw { position: relative; display: grid; gap: 2px; width: 5.25rem; padding: var(--space-1); text-align: left; background: var(--color-bg-surface); border: 1px solid var(--color-border-subtle); border-radius: var(--radius-md); transition: transform var(--duration-fast) var(--ease-spring), box-shadow var(--duration-base), border-color var(--duration-fast); }
+  .sw:hover { transform: translateY(-2px); box-shadow: var(--shadow-md); border-color: var(--color-border-strong); }
+  .sw:active { transform: scale(0.95); }
+  .sw__chip { height: 2.25rem; background: var(--sw); border-radius: var(--radius-sm); box-shadow: inset 0 0 0 1px rgb(0 0 0 / 0.06); }
+  .sw__step { font-size: var(--text-xs); font-weight: var(--weight-semibold); padding-inline: 2px; }
+  .sw__hex { font-family: var(--font-mono); font-size: 0.625rem; color: var(--color-text-muted); padding-inline: 2px; }
+  .sw__done { position: absolute; inset: 0; display: flex; align-items: center; justify-content: center; gap: 4px; font-size: var(--text-xs); font-weight: var(--weight-semibold); color: var(--success-on-solid); background: var(--success-solid); border-radius: var(--radius-md); opacity: 0; transform: scale(0.85); pointer-events: none; transition: opacity var(--duration-fast), transform var(--duration-base) var(--ease-spring); }
+  .sw[data-copied] .sw__done { opacity: 1; transform: none; }
+  .tk { display: inline-flex; align-items: center; gap: var(--space-2); padding: var(--space-2) var(--space-3); background: var(--color-bg-page); border-radius: var(--radius-md); }
+  .tk__box { width: 2rem; height: 1.5rem; border-radius: var(--radius-sm); box-shadow: inset 0 0 0 1px rgb(128 128 128 / 0.25); }
+  .tk__text { font-family: var(--font-serif); font-weight: var(--weight-semibold); }
+  .ds__accents { display: grid; grid-template-columns: repeat(auto-fit, minmax(14rem, 1fr)); gap: var(--space-3); }
+  .acc { padding: var(--space-3); background: var(--color-bg-surface); border: 1px solid var(--color-border-subtle); border-radius: var(--radius-lg); }
+  .acc__name { display: block; margin-bottom: var(--space-2); font-size: var(--text-sm); font-weight: var(--weight-semibold); text-transform: capitalize; }
+  .acc__row { display: grid; grid-template-columns: repeat(4, 1fr); gap: 2px; padding: 2px; margin-top: 2px; background: var(--color-bg-page); border-radius: var(--radius-md); overflow: hidden; }
+  .acc__row span { display: grid; place-items: center; height: 2rem; font-size: 0.6875rem; font-weight: var(--weight-medium); }
+  .ds__status { display: grid; grid-template-columns: repeat(auto-fit, minmax(10rem, 1fr)); gap: var(--space-3); }
+  .st { display: flex; align-items: center; gap: var(--space-2); padding: var(--space-3) var(--space-4); background: var(--_t); border: 1px solid var(--_b); border-radius: var(--radius-md); color: var(--_x); font-size: var(--text-sm); }
+  .st small { margin-left: auto; opacity: 0.8; }
+  .st__dot { width: 0.6rem; height: 0.6rem; border-radius: 50%; background: var(--_s); }
+
+  /* spacing, radius, shadow */
+  .ds__space { display: grid; gap: var(--space-1); }
+  .sp { display: grid; grid-template-columns: 6rem 1fr 4rem; align-items: center; gap: var(--space-3); font-size: var(--text-xs); }
+  .sp__bar { height: 0.75rem; background: var(--accent-solid); border-radius: 2px; }
+  .sp small { color: var(--color-text-muted); }
+  .ds__row { display: flex; flex-wrap: wrap; gap: var(--space-5); }
+  .rd, .sh { display: grid; justify-items: center; gap: var(--space-1); font-size: var(--text-xs); }
+  .rd span { width: 4.5rem; height: 4.5rem; background: var(--accent-tint-strong); border: 2px solid var(--accent-solid); }
+  .rd small { color: var(--color-text-muted); }
+  .sh span { width: 6rem; height: 4rem; background: var(--color-bg-surface); border-radius: var(--radius-lg); }
+  .ds__row--shadow { padding: var(--space-4); background: var(--color-bg-subtle); border-radius: var(--radius-lg); }
+
+  /* motion */
+  .mo { display: grid; grid-template-columns: 8.5rem 1fr auto; align-items: center; gap: var(--space-3); padding-block: var(--space-1); font-size: var(--text-xs); }
+  .mo__track { position: relative; height: 1.25rem; background: var(--color-bg-subtle); border-radius: var(--radius-pill); }
+  .mo__dot { position: absolute; top: 2px; left: 2px; width: calc(1.25rem - 4px); height: calc(1.25rem - 4px); border-radius: 50%; background: var(--accent-solid); transition: transform var(--d) var(--e); }
+  .mo__track.is-on .mo__dot { transform: translateX(calc(var(--track-w, 12rem) - 1.25rem)); }
+
+  /* mẫu */
+  .cell { display: grid; justify-items: center; gap: var(--space-2); }
+  .cell small { font-size: 0.6875rem; font-family: var(--font-mono); color: var(--color-text-muted); }
+  .stack { display: grid; gap: 0; width: 100%; }
+  .stack .callout { margin-block: var(--space-2); max-width: none; }
+  .w16 { width: 16rem; max-width: 100%; }
+  .w-full { width: 100%; }
+  .chips { display: flex; flex-wrap: wrap; gap: var(--space-2); }
+  .chip { display: inline-flex; align-items: center; gap: var(--space-2); padding: var(--space-1) var(--space-3); font-size: var(--text-xs); font-weight: var(--weight-medium); background: var(--accent-tint); color: var(--accent-text); border: 1px solid var(--accent-border); border-radius: var(--radius-pill); }
+  .chip i { width: 0.6rem; height: 0.6rem; border-radius: 50%; background: var(--accent-solid); }
+  .ds__prose { padding: var(--space-6); background: var(--color-bg-surface); border: 1px solid var(--color-border-subtle); border-radius: var(--radius-lg); }
+  .ds__prose h2:first-child { margin-top: 0; border-top: 0; padding-top: 0; }
+  .ds .sb { max-width: 24rem; }
+</style>
+
+<script>
+  // Chép tên biến khi bấm ô màu
+  document.querySelectorAll('[data-copy]').forEach((b) => {
+    b.addEventListener('click', async () => {
+      try { await navigator.clipboard.writeText(b.dataset.copy); } catch {}
+      b.setAttribute('data-copied', '');
+      setTimeout(() => b.removeAttribute('data-copied'), 1100);
+    });
+  });
+
+  // Phát lại demo chuyển động
+  document.querySelectorAll('.mo').forEach((row) => {
+    const track = row.querySelector('.mo__track');
+    row.querySelector('[data-play]').addEventListener('click', () => {
+      track.style.setProperty('--track-w', track.clientWidth + 'px');
+      track.classList.remove('is-on');
+      void track.offsetWidth;
+      requestAnimationFrame(() => track.classList.add('is-on'));
+      setTimeout(() => track.classList.remove('is-on'), 1300);
+    });
+  });
+
+  // Nguồn dữ liệu giả lập cho SearchBox (thay bằng chỉ mục thật sau)
+  const index = [
+    { title: 'Cơ chế phòng vệ', href: '#', course: 'Nhân cách', excerpt: 'Chiến lược vô thức giúp Ego giảm lo âu.' },
+    { title: 'Cơ chế bù trừ', href: '#', course: 'Nhân cách', excerpt: 'Adler: nỗ lực vượt qua mặc cảm tự ti.' },
+    { title: 'Trí nhớ làm việc', href: '#', course: 'Nhận thức', excerpt: 'Hệ thống lưu giữ và xử lý thông tin tạm thời.' },
+    { title: 'ANOVA', href: '#', course: 'Thống kê', excerpt: 'So sánh trung bình của từ ba nhóm trở lên.' },
+    { title: 'Rối loạn lo âu', href: '#', course: 'Tâm bệnh học' }
+  ];
+  const norm = (s) => s.toLowerCase().normalize('NFD').replace(/[̀-ͯ]/g, '').replace(/đ/g, 'd');
+  document.querySelectorAll('psy-search').forEach((el) => {
+    if (el.querySelector('input').id === 'x' || el.dataset.open === 'true') return;
+    el.addEventListener('psy-search:query', (e) => {
+      const q = norm(e.detail.query);
+      el.setState('loading');
+      setTimeout(() => {
+        if (q === 'loi') return el.setState('error');
+        el.setResults(index.filter((r) => norm(r.title).includes(q)));
+      }, 450);
+    });
+  });
+</script>

@@ -1,0 +1,63 @@
+---
+import CourseLayout from '../../layouts/CourseLayout.astro';
+import Button from '../../design-system/components/Button.astro';
+import Icon from '../../design-system/components/Icon.astro';
+import Callout from '../../design-system/components/Callout.astro';
+import ArticleCard from '../../design-system/components/ArticleCard.astro';
+import { courses, coursePages } from '../../data/courses';
+import { articlesOf, readingMinutes, formatDate } from '../../data/articles';
+
+export function getStaticPaths() {
+  return courses.filter((c) => c.ready).map((course) => ({ params: { course: course.slug }, props: { course } }));
+}
+const { course } = Astro.props;
+const base = import.meta.env.BASE_URL.replace(/\/$/, '');
+const pg = coursePages(course, base);
+const modules = course.modules ?? [];
+const related = articlesOf(course.slug);
+const headings = [
+  { depth: 2, slug: 'chuyen-de', text: 'Các chuyên đề' },
+  { depth: 2, slug: 'cach-hoc', text: 'Cách học' },
+  ...(related.length ? [{ depth: 2, slug: 'bai-viet', text: 'Bài viết học thuật' }] : [])
+];
+---
+<CourseLayout course={course} pageId="" title={course.title} headings={headings}>
+  <h1>{course.title}</h1>
+  <p class="cdoc__lead">{course.lead}</p>
+
+  {course.stats && (
+    <ul class="cdoc__stats" aria-label="Số liệu môn học">
+      {course.stats.map((s) => <li><strong>{s.value}</strong><span>{s.label}</span></li>)}
+    </ul>
+  )}
+
+  {modules[0] && <Button size="lg" href={pg.modules[0].href}>Bắt đầu chuyên đề 01<Icon slot="icon-end" name="arrow-right" size={18} /></Button>}
+
+  <h2 id="chuyen-de">Các chuyên đề</h2>
+  <ul class="cdoc__list">
+    {modules.map((m, i) => (
+      <li>
+        <a class="cdoc__item" href={pg.modules[i].href}>
+          <span class="cdoc__n">{m.n}</span>
+          <span class="cdoc__body"><strong>{m.title}</strong><small>{m.lead}</small></span>
+          <Icon name="arrow-right" size={18} class="cdoc__go" />
+        </a>
+      </li>
+    ))}
+  </ul>
+
+  <h2 id="cach-hoc">Cách học</h2>
+  <p>Đọc theo thứ tự các chuyên đề ở mục lục bên trái. Mỗi chuyên đề có các mục chính và điểm cần nhớ. Cuối cùng dùng trang Ôn tập nhanh để lật thẻ và làm quiz.</p>
+  <Callout type="note" title="Trạng thái nội dung">Nội dung chi tiết từng chuyên đề đang được chuyển từ các bài học cũ sang wiki. Trang hiện chỉ có phần tóm tắt.</Callout>
+
+  {related.length > 0 && (
+    <>
+      <h2 id="bai-viet">Bài viết học thuật</h2>
+      <p>Đọc sâu hơn các mô hình và khái niệm của môn này.</p>
+      <div class="cdoc__articles">
+        {related.map((a, i) => <ArticleCard href={`${base}/bai-viet/${a.slug}/`} title={a.title} excerpt={a.abstract} date={formatDate(a.date)} minutes={readingMinutes(a)} tags={a.tags} draft={a.status === 'draft'} seed={i} />)}
+      </div>
+      <p><a href={`${base}/bai-viet/#${course.slug}`}>Xem tất cả bài viết của môn</a></p>
+    </>
+  )}
+</CourseLayout>

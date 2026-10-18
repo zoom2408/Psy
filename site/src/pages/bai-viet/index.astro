@@ -1,0 +1,60 @@
+---
+import BaseLayout from '../../layouts/BaseLayout.astro';
+import ArticleCard from '../../design-system/components/ArticleCard.astro';
+import Tag from '../../design-system/components/Tag.astro';
+import Footer from '../../design-system/components/Footer.astro';
+import { articlesByDate, readingMinutes, formatDate } from '../../data/articles';
+import '../../styles/article.css';
+
+const base = import.meta.env.BASE_URL.replace(/\/$/, '');
+const courses = [...new Map(articlesByDate.map((a) => [a.course, a.courseTitle])).entries()];
+const card = (a: (typeof articlesByDate)[number], i: number) => ({
+  href: `${base}/bai-viet/${a.slug}/`, title: a.title, excerpt: a.abstract, date: formatDate(a.date), minutes: readingMinutes(a),
+  tags: a.tags, course: a.course, courseTitle: a.courseTitle, draft: a.status === 'draft', seed: i
+});
+---
+<BaseLayout title="Bài viết" description="Bài viết học thuật về tâm lý học và tâm bệnh học, có trích dẫn và tài liệu tham khảo.">
+  <main id="main" tabindex="-1">
+    <div class="feed" data-feed>
+      <header class="feed__head" data-reveal>
+        <p class="feed__eyebrow">Bài viết học thuật</p>
+        <h1>Đọc sâu hơn một khái niệm</h1>
+        <p>Các bài phân tích ngắn, có trích dẫn và tài liệu tham khảo, gắn với từng môn học.</p>
+      </header>
+
+      <div class="feed__filters" role="group" aria-label="Lọc theo môn">
+        <Tag interactive selected data-filter="">Tất cả</Tag>
+        {courses.map(([slug, title]) => <Tag interactive data-filter={slug}>{title}</Tag>)}
+        <span class="feed__count" aria-live="polite"><span data-n>{articlesByDate.length}</span> bài</span>
+      </div>
+
+      <div class="feed__grid">
+        <div class="feed__list" data-list>
+          {articlesByDate.map((a, i) => <ArticleCard {...card(a, i)} />)}
+          <p class="feed__empty" data-empty hidden>Chưa có bài viết nào cho môn này.</p>
+        </div>
+      </div>
+    </div>
+    <Footer />
+  </main>
+</BaseLayout>
+
+<script>
+  const feed = document.querySelector<HTMLElement>('[data-feed]');
+  if (feed) {
+    const chips = [...feed.querySelectorAll<HTMLButtonElement>('[data-filter]')];
+    const items = [...feed.querySelectorAll<HTMLElement>('[data-list] .ac')];
+    const empty = feed.querySelector<HTMLElement>('[data-empty]')!;
+    const n = feed.querySelector<HTMLElement>('[data-n]')!;
+    const apply = (f: string) => {
+      chips.forEach((c) => { const on = c.dataset.filter === f; c.setAttribute('aria-pressed', String(on)); c.classList.toggle('is-selected', on); });
+      let shown = 0;
+      items.forEach((it) => { const ok = !f || it.dataset.course === f; it.hidden = !ok; if (ok) shown++; });
+      empty.hidden = shown > 0; n.textContent = String(shown);
+      try { history.replaceState(null, '', f ? `#${f}` : location.pathname); } catch {}
+    };
+    chips.forEach((c) => c.addEventListener('click', () => apply(c.dataset.filter || '')));
+    const h = location.hash.slice(1);
+    if (h && chips.some((c) => c.dataset.filter === h)) apply(h);
+  }
+</script>

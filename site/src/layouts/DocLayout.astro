@@ -1,0 +1,77 @@
+---
+// Layout đọc 3 cột: cây môn | nội dung | mục lục. Dưới 1024px: cây môn thành drawer.
+import BaseLayout from './BaseLayout.astro';
+interface Props { title: string; description?: string; accent?: 'teal' | 'violet' | 'amber' | 'rose' | 'blue' | 'green'; progress?: boolean }
+const props = Astro.props;
+---
+<BaseLayout {...props} showMenu>
+  <div class="doc">
+    <div class="doc__overlay" data-nav-overlay hidden></div>
+    <aside class="doc__nav" id="doc-nav" aria-label="Điều hướng" data-nav><slot name="nav" /></aside>
+    <main class="doc__main" id="main" tabindex="-1"><slot /></main>
+    <aside class="doc__toc" aria-label="Mục lục trang"><div class="doc__toc-in"><slot name="toc" /></div></aside>
+  </div>
+</BaseLayout>
+
+<style is:global>
+  .doc { display: grid; grid-template-columns: minmax(0, 1fr); max-width: var(--layout-container); margin-inline: auto; }
+  .doc__main { min-width: 0; padding: var(--space-8) var(--layout-gutter) var(--space-20); outline: none; }
+  .doc__nav, .doc__toc { font-family: var(--font-sans); }
+  .doc__toc { display: none; }
+
+  @media (min-width: 1024px) {
+    .doc { grid-template-columns: var(--layout-sidebar-w) minmax(0, 1fr); }
+    .doc__nav { position: sticky; top: var(--layout-header-h); align-self: start; height: calc(100dvh - var(--layout-header-h)); overflow-y: auto; padding: var(--space-6) var(--space-4) var(--space-10) var(--layout-gutter); border-right: 1px solid var(--color-border-subtle); scrollbar-width: thin; }
+    .doc__main { padding-inline: var(--space-10); }
+  }
+  @media (min-width: 1280px) {
+    .doc { grid-template-columns: var(--layout-sidebar-w) minmax(0, 1fr) var(--layout-toc-w); }
+    .doc__toc { display: block; }
+    .doc__toc-in { position: sticky; top: calc(var(--layout-header-h) + var(--space-6)); padding-right: var(--layout-gutter); max-height: calc(100dvh - var(--layout-header-h) - var(--space-10)); overflow-y: auto; }
+    .doc__main { padding-inline: var(--space-8); }
+  }
+
+  /* Drawer (mobile / tablet) */
+  @media (max-width: 1023px) {
+    .doc__nav {
+      position: fixed; z-index: var(--z-drawer); inset: 0 auto 0 0; width: min(20rem, 86vw); padding: var(--space-6) var(--space-4) var(--space-10);
+      overflow-y: auto; background: var(--color-bg-surface); border-right: 1px solid var(--color-border-default); box-shadow: var(--shadow-lg);
+      transform: translateX(-102%); visibility: hidden;
+      transition: transform var(--duration-slow) var(--ease-standard), visibility 0s var(--duration-slow);
+    }
+    body[data-nav-open] .doc__nav { transform: none; visibility: visible; transition-delay: 0s; }
+    .doc__overlay { position: fixed; inset: 0; z-index: var(--z-overlay); background: var(--color-bg-overlay); backdrop-filter: blur(2px); animation: overlay-in var(--duration-base) var(--ease-standard); }
+    @keyframes overlay-in { from { opacity: 0; } }
+    body[data-nav-open] { overflow: hidden; }
+  }
+  @media (min-width: 1024px) { .doc__overlay { display: none; } }
+</style>
+
+<script>
+  const body = document.body;
+  const nav = document.querySelector('[data-nav]');
+  const overlay = document.querySelector('[data-nav-overlay]');
+  const toggle = document.querySelector('[data-nav-toggle]');
+  if (nav && overlay && toggle) {
+    const isOpen = () => body.hasAttribute('data-nav-open');
+    const open = () => {
+      body.setAttribute('data-nav-open', '');
+      overlay.hidden = false;
+      toggle.setAttribute('aria-expanded', 'true');
+      toggle.setAttribute('aria-label', 'Đóng mục lục');
+      setTimeout(() => nav.querySelector('a, summary')?.focus(), 60);
+    };
+    const close = (restore = true) => {
+      body.removeAttribute('data-nav-open');
+      overlay.hidden = true;
+      toggle.setAttribute('aria-expanded', 'false');
+      toggle.setAttribute('aria-label', 'Mở mục lục');
+      if (restore) toggle.focus();
+    };
+    toggle.addEventListener('click', () => (isOpen() ? close() : open()));
+    overlay.addEventListener('click', () => close());
+    nav.addEventListener('click', (e) => { if (e.target.closest('a')) close(false); });
+    document.addEventListener('keydown', (e) => { if (e.key === 'Escape' && isOpen()) close(); });
+    matchMedia('(min-width: 1024px)').addEventListener('change', (m) => { if (m.matches && isOpen()) close(false); });
+  }
+</script>

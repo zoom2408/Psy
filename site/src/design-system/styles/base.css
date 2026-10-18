@@ -1,0 +1,80 @@
+/* Reset + nền tảng. Chỉ dùng token, không dùng giá trị cứng. */
+*, *::before, *::after { box-sizing: border-box; }
+* { margin: 0; }
+
+html {
+  -webkit-text-size-adjust: 100%;
+  scroll-padding-top: calc(var(--layout-header-h) + var(--space-6));
+  scroll-behavior: smooth;
+}
+
+body {
+  min-height: 100dvh;
+  background: var(--color-bg-page);
+  color: var(--color-text-primary);
+  font-family: var(--font-sans);
+  font-size: var(--text-base);
+  line-height: var(--leading-normal);
+  -webkit-font-smoothing: antialiased;
+  text-rendering: optimizeLegibility;
+  transition: background-color var(--duration-base) var(--ease-standard), color var(--duration-base) var(--ease-standard);
+}
+
+img, svg, video { display: block; max-width: 100%; }
+button, input, textarea, select { font: inherit; color: inherit; }
+button { cursor: pointer; background: none; border: 0; padding: 0; }
+button:disabled { cursor: not-allowed; }
+ul[role="list"], ol[role="list"] { list-style: none; padding: 0; }
+
+a { color: var(--accent-text); text-underline-offset: 0.2em; text-decoration-color: var(--accent-border); transition: color var(--duration-fast) var(--ease-standard), text-decoration-color var(--duration-fast) var(--ease-standard); }
+a:hover { text-decoration-color: currentColor; }
+
+::selection { background: var(--accent-tint-strong); color: var(--color-text-primary); }
+
+:focus { outline: none; }
+:focus-visible {
+  outline: 2px solid var(--accent-solid);
+  outline-offset: 2px;
+  border-radius: var(--radius-sm);
+}
+
+.sr-only {
+  position: absolute; width: 1px; height: 1px; padding: 0; margin: -1px;
+  overflow: hidden; clip: rect(0 0 0 0); white-space: nowrap; border: 0;
+}
+
+.skip-link {
+  position: fixed; top: var(--space-3); left: var(--space-3); z-index: var(--z-toast);
+  padding: var(--space-2) var(--space-4); border-radius: var(--radius-md);
+  background: var(--accent-solid); color: var(--accent-on-solid); font-weight: var(--weight-medium);
+  transform: translateY(-200%); transition: transform var(--duration-base) var(--ease-spring);
+}
+.skip-link:focus { transform: translateY(0); }
+
+.container { width: 100%; max-width: var(--layout-container); margin-inline: auto; padding-inline: var(--layout-gutter); }
+
+/* Chuyển trang mượt giữa các trang (trình duyệt hỗ trợ cross-document view transitions) */
+@view-transition { navigation: auto; }
+::view-transition-old(root), ::view-transition-new(root) { animation-duration: var(--duration-base); }
+
+/* Hiện dần khi cuộn tới (chỉ khi JS chạy, để nội dung không bị ẩn khi tắt JS) */
+html.js [data-reveal] {
+  opacity: 0; transform: translateY(10px);
+  transition: opacity var(--duration-slow) var(--ease-enter), transform var(--duration-slow) var(--ease-enter);
+  transition-delay: calc(var(--reveal-i, 0) * 60ms);
+}
+html.js [data-reveal].is-visible { opacity: 1; transform: none; }
+
+@media (prefers-reduced-motion: reduce) {
+  html { scroll-behavior: auto; }
+  *, *::before, *::after {
+    animation-duration: 0.01ms !important; animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important; transition-delay: 0ms !important;
+  }
+  html.js [data-reveal] { opacity: 1; transform: none; }
+}
+
+/* Keyframes dùng chung nhiều component */
+@keyframes shimmer { to { background-position: -200% 0; } }
+@keyframes btn-spin { to { transform: rotate(360deg); } }
+@keyframes qset-in { from { opacity: 0; transform: translateY(16px) scale(0.96); } to { opacity: 1; transform: none; } }

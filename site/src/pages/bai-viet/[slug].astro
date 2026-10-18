@@ -1,0 +1,92 @@
+---
+import BaseLayout from '../../layouts/BaseLayout.astro';
+import Breadcrumb from '../../design-system/components/Breadcrumb.astro';
+import Callout from '../../design-system/components/Callout.astro';
+import Tag from '../../design-system/components/Tag.astro';
+import Toc from '../../design-system/components/Toc.astro';
+import Icon from '../../design-system/components/Icon.astro';
+import ArticleCard from '../../design-system/components/ArticleCard.astro';
+import Footer from '../../design-system/components/Footer.astro';
+import { articles, articlesByDate, readingMinutes, formatDate } from '../../data/articles';
+import '../../styles/article.css';
+
+export function getStaticPaths() {
+  return articles.map((article) => ({ params: { slug: article.slug }, props: { article } }));
+}
+const { article: a } = Astro.props;
+const base = import.meta.env.BASE_URL.replace(/\/$/, '');
+const esc = (t: string) => t.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
+const cite = (t: string) => esc(t).replace(/\[\^(\d+)\]/g, '<sup><a href="#ref-$1" aria-label="Tài liệu tham khảo $1">$1</a></sup>');
+const headings = [...a.sections.map((s) => ({ depth: 2, slug: s.id, text: s.heading })), { depth: 2, slug: 'tai-lieu', text: 'Tài liệu tham khảo' }];
+const more = articlesByDate.filter((x) => x.slug !== a.slug).slice(0, 2);
+---
+<BaseLayout title={a.title} description={a.subtitle} progress>
+  <main id="main" tabindex="-1">
+    <div class="art">
+      <div class="art__col">
+        <Breadcrumb items={[{ label: 'Trang chủ', href: `${base}/` }, { label: 'Bài viết', href: `${base}/bai-viet/` }, { label: a.courseTitle }]} />
+        <div class="art__kicker">
+          <a class="art__course" href={`${base}/bai-viet/#${a.course}`}>{a.courseTitle}</a>
+          {a.status === 'draft' && <Tag size="sm" variant="warning">Bản nháp</Tag>}
+        </div>
+        <h1>{a.title}</h1>
+        <p class="art__deck">{a.subtitle}</p>
+
+        <div class="art__by">
+          <span class="art__avatar" aria-hidden="true">{a.author.charAt(0)}</span>
+          <span class="art__who"><strong>{a.author}</strong><span>{formatDate(a.date)} · {readingMinutes(a)} phút đọc</span></span>
+          <div class="art__actions">
+            <button type="button" class="art__btn" data-helpful aria-pressed="false" data-key={a.slug}><Icon name="star" size={16} /><span>Hữu ích</span></button>
+            <button type="button" class="art__btn" data-copy><Icon name="link" size={16} /><span>Chép link</span></button>
+          </div>
+        </div>
+
+        <Callout type="definition" title="Tóm tắt" class="art__abstract">{a.abstract}</Callout>
+
+        <div class="prose art__body">
+          {a.sections.map((s) => (
+            <section>
+              <h2 id={s.id}>{s.heading}</h2>
+              {s.paras.map((p) => <p set:html={cite(p)} />)}
+            </section>
+          ))}
+          <section class="art__refs" aria-labelledby="tai-lieu">
+            <h2 id="tai-lieu">Tài liệu tham khảo</h2>
+            <ol>{a.references.map((r, i) => <li id={`ref-${i + 1}`}>{r}</li>)}</ol>
+          </section>
+        </div>
+
+        <ul class="art__tags" aria-label="Chủ đề">{a.tags.map((t) => <li><Tag>{t}</Tag></li>)}</ul>
+      </div>
+      <aside class="art__aside" aria-label="Mục lục bài viết"><div class="art__aside-in"><Toc headings={headings} /></div></aside>
+    </div>
+
+    {more.length > 0 && (
+      <section class="art__more" aria-labelledby="more-t">
+        <h2 id="more-t">Đọc tiếp</h2>
+        {more.map((x, i) => <ArticleCard href={`${base}/bai-viet/${x.slug}/`} title={x.title} excerpt={x.abstract} date={formatDate(x.date)} minutes={readingMinutes(x)} tags={x.tags} course={x.course} courseTitle={x.courseTitle} draft={x.status === 'draft'} seed={i + 1} />)}
+      </section>
+    )}
+    <Footer />
+  </main>
+</BaseLayout>
+
+<script>
+  const store = (fn: () => void) => { try { fn(); } catch {} };
+  const h = document.querySelector<HTMLButtonElement>('[data-helpful]');
+  if (h) {
+    const key = `psy-helpful:${h.dataset.key}`;
+    const set = (on: boolean) => { h.setAttribute('aria-pressed', String(on)); h.querySelector('span')!.textContent = on ? 'Đã đánh dấu hữu ích' : 'Hữu ích'; };
+    store(() => set(localStorage.getItem(key) === '1'));
+    h.addEventListener('click', () => { const on = h.getAttribute('aria-pressed') !== 'true'; set(on); store(() => on ? localStorage.setItem(key, '1') : localStorage.removeItem(key)); });
+  }
+  const c = document.querySelector<HTMLButtonElement>('[data-copy]');
+  if (c) {
+    const label = c.querySelector('span')!;
+    c.addEventListener('click', async () => {
+      try { await navigator.clipboard.writeText(location.href.split('#')[0]); label.textContent = 'Đã chép link'; c.classList.add('is-done'); }
+      catch { label.textContent = 'Không chép được'; }
+      setTimeout(() => { label.textContent = 'Chép link'; c.classList.remove('is-done'); }, 1800);
+    });
+  }
+</script>

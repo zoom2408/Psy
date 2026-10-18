@@ -1,0 +1,83 @@
+/* Typography cho nội dung đọc (style A: editorial). Dùng class .prose bọc nội dung markdown. */
+.prose {
+  max-width: var(--layout-measure);
+  font-family: var(--font-serif);
+  font-size: var(--text-md);
+  line-height: var(--leading-relaxed);
+  color: var(--color-text-primary);
+  overflow-wrap: break-word;
+}
+.prose > * + * { margin-top: var(--space-5); }
+
+.prose :is(h1, h2, h3, h4) {
+  font-family: var(--font-serif); font-weight: var(--weight-semibold);
+  line-height: var(--leading-tight); letter-spacing: var(--tracking-tight);
+  text-wrap: balance; position: relative;
+}
+.prose h1 { font-size: var(--text-4xl); font-weight: var(--weight-bold); }
+.prose h2 { font-size: var(--text-2xl); margin-top: var(--space-12); padding-top: var(--space-5); border-top: 1px solid var(--color-border-subtle); }
+.prose h3 { font-size: var(--text-xl); margin-top: var(--space-8); }
+.prose h4 { font-size: var(--text-lg); margin-top: var(--space-6); font-family: var(--font-sans); font-weight: var(--weight-semibold); }
+.prose :is(h2, h3, h4) + * { margin-top: var(--space-3); }
+
+/* Neo heading: hiện khi hover/focus */
+.prose .anchor {
+  position: absolute; right: 100%; padding-right: var(--space-2);
+  color: var(--color-text-muted); text-decoration: none; font-family: var(--font-sans); font-weight: var(--weight-regular);
+  opacity: 0; transform: translateX(4px);
+  transition: opacity var(--duration-fast) var(--ease-standard), transform var(--duration-fast) var(--ease-standard), color var(--duration-fast);
+}
+.prose :is(h2, h3, h4):is(:hover, :focus-within) .anchor, .prose .anchor:focus-visible { opacity: 1; transform: none; }
+.prose .anchor:hover { color: var(--accent-text); }
+
+.prose p { text-wrap: pretty; }
+.prose strong { font-weight: var(--weight-semibold); }
+.prose em { font-style: italic; }
+
+.prose a { text-decoration: underline; text-decoration-thickness: 1px; }
+.prose a:hover { text-decoration-thickness: 2px; color: var(--accent-solid-hover); }
+
+/* Wikilink [[...]] */
+.prose a.wikilink { text-decoration-style: dotted; text-decoration-color: var(--accent-solid); font-weight: var(--weight-medium); }
+.prose a.wikilink:hover { text-decoration-style: solid; background: var(--accent-tint); border-radius: var(--radius-xs); }
+.prose a.wikilink.is-missing { color: var(--danger-text); text-decoration-style: dashed; text-decoration-color: var(--danger-border); cursor: help; }
+
+.prose :is(ul, ol) { padding-left: var(--space-6); }
+.prose li + li { margin-top: var(--space-2); }
+.prose li::marker { color: var(--accent-solid); }
+.prose li > :is(ul, ol) { margin-top: var(--space-2); }
+
+.prose blockquote {
+  padding-left: var(--space-5); border-left: 3px solid var(--color-border-strong);
+  color: var(--color-text-secondary); font-style: italic;
+}
+
+.prose hr { border: 0; height: 1px; background: var(--color-border-default); margin-block: var(--space-10); }
+
+.prose code {
+  font-family: var(--font-mono); font-size: 0.88em;
+  padding: 0.12em 0.4em; background: var(--color-bg-subtle); border: 1px solid var(--color-border-subtle); border-radius: var(--radius-sm);
+}
+.prose pre { padding: var(--space-4) var(--space-5); background: var(--color-bg-subtle); border: 1px solid var(--color-border-subtle); border-radius: var(--radius-md); overflow-x: auto; line-height: var(--leading-normal); }
+.prose pre code { padding: 0; border: 0; background: none; font-size: var(--text-sm); }
+
+.prose mark { background: linear-gradient(transparent 55%, var(--accent-tint-strong) 55%); color: inherit; padding-inline: 0.1em; }
+.prose kbd { font-family: var(--font-mono); font-size: 0.82em; padding: 0.1em 0.45em; border: 1px solid var(--color-border-default); border-bottom-width: 2px; border-radius: var(--radius-sm); background: var(--color-bg-surface); }
+
+.prose img { border-radius: var(--radius-md); margin-inline: auto; }
+.prose figure { margin-block: var(--space-6); }
+.prose figcaption { margin-top: var(--space-2); font-family: var(--font-sans); font-size: var(--text-sm); color: var(--color-text-muted); text-align: center; }
+
+/* Bảng: cuộn ngang trên mobile */
+.prose .table-wrap { overflow-x: auto; border: 1px solid var(--color-border-default); border-radius: var(--radius-md); }
+.prose table { width: 100%; border-collapse: collapse; font-family: var(--font-sans); font-size: var(--text-sm); line-height: var(--leading-snug); }
+.prose th { text-align: left; font-weight: var(--weight-semibold); background: var(--color-bg-subtle); white-space: nowrap; }
+.prose :is(th, td) { padding: var(--space-3) var(--space-4); border-bottom: 1px solid var(--color-border-subtle); vertical-align: top; }
+.prose tbody tr:last-child td { border-bottom: 0; }
+.prose tbody tr { transition: background-color var(--duration-fast); }
+.prose tbody tr:hover { background: var(--accent-tint); }
+
+@media (max-width: 767px) {
+  .prose { font-size: var(--text-base); }
+  .prose .anchor { display: none; }
+}
