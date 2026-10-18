@@ -8,6 +8,12 @@ Mỗi entry: ngày, yêu cầu, lý do, việc đã làm, ghi chú/giả định
 
 ## 2026-10-17
 
+### #014 Kiểm tra và nối domain psy.mindmirror.quest
+- **Yêu cầu:** Domain `psy.mindmirror.quest` đã link với site, kiểm tra. Sau đó: sửa cho chạy.
+- **Lý do:** Site trả 404 vì GitHub Pages đang phục vụ thư mục gốc repo (không có index.html) thay vì bản build Astro.
+- **Đã làm:** DNS đúng (CNAME tới zoom2408.github.io), chứng chỉ HTTPS đã duyệt. Thêm `.github/workflows/deploy.yml` (Node theo `.nvmrc`, build `site/` với `SITE_URL=https://psy.mindmirror.quest`, không `BASE_PATH`, deploy `site/dist`), thêm `site/public/CNAME`, đổi Pages sang nguồn GitHub Actions.
+- **Ghi chú:** Enforce HTTPS bật sau khi site lên.
+
 ### #013 Thêm phần Bài viết học thuật kiểu Medium
 - **Yêu cầu:** Thêm phần bài viết học thuật vào site, cấu trúc như articles của Medium.
 - **Lý do:** Ngoài mục lục môn học, cần chỗ đọc sâu một khái niệm hoặc mô hình, có trích dẫn và tài liệu tham khảo, gắn với môn tương ứng.
